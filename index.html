@@ -69,6 +69,32 @@
             font-size: 0.95rem;
         }
 
+        .connection-status {
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .connection-status.connected {
+            background: #d1fae5;
+            color: #059669;
+            border: 1px solid #10b981;
+        }
+
+        .connection-status.error {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #ef4444;
+        }
+
+        .connection-status.loading {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #f59e0b;
+        }
+
         /* Stats Bar */
         .stats-bar {
             display: flex;
@@ -112,12 +138,17 @@
             margin-bottom: 1rem;
         }
 
-        input[type="text"], input[type="search"] {
+        input[type="text"], input[type="search"], input[type="email"], input[type="tel"], select {
             flex: 1;
             padding: 0.75rem;
             border: 1px solid var(--gray-300);
             border-radius: 8px;
             font-size: 1rem;
+        }
+
+        select {
+            background-color: white;
+            cursor: pointer;
         }
 
         input:focus {
@@ -229,6 +260,12 @@
         .mentee-specialty {
             color: var(--gray-600);
             font-size: 0.875rem;
+        }
+
+        .mentee-detail {
+            color: var(--gray-500);
+            font-size: 0.813rem;
+            margin-top: 0.125rem;
         }
 
         .priority-badge {
@@ -402,6 +439,33 @@
             display: none;
         }
 
+        /* Security Status */
+        .security-status {
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .security-status.encrypted {
+            background: #d1fae5;
+            color: #059669;
+            border: 1px solid #10b981;
+        }
+
+        .security-status.unencrypted {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #f59e0b;
+        }
+
+        .form-group small {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
         /* Toast Notification */
         .toast {
             position: fixed;
@@ -465,6 +529,9 @@
         <header>
             <h1>📋 Mentee Connection Tracker</h1>
             <p class="subtitle">Stay connected with your mentees</p>
+            <div id="connectionStatus" class="connection-status">
+                <span id="statusText">Connecting to Google Sheets...</span>
+            </div>
         </header>
 
         <!-- Stats Bar -->
@@ -490,6 +557,7 @@
             </div>
             <div class="button-row">
                 <button class="btn-primary" onclick="app.showAddMenteeModal()">+ Add Mentee</button>
+                <button class="btn-secondary" onclick="app.showBulkImportModal()">📥 Bulk Import</button>
                 <button class="btn-secondary" onclick="app.exportData()">Export Data</button>
                 <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Import Data</button>
                 <input type="file" id="importFile" accept=".json" onchange="app.importData(event)">
@@ -540,6 +608,56 @@
                 <label for="menteePhone">Phone Number (Optional)</label>
                 <input type="tel" id="menteePhone" placeholder="e.g. (555) 123-4567">
             </div>
+            <div class="form-group">
+                <label for="menteeEmail">Email Address (Optional)</label>
+                <input type="email" id="menteeEmail" placeholder="e.g. mentee@example.com">
+            </div>
+            <div class="form-group">
+                <label for="menteeYear">Year/Level (Optional)</label>
+                <input type="text" id="menteeYear" placeholder="e.g. 3rd Year, PGY-2, Junior">
+            </div>
+            <div class="form-group">
+                <label for="menteeInstitution">Institution (Optional)</label>
+                <input type="text" id="menteeInstitution" placeholder="e.g. University Hospital, Medical School">
+            </div>
+            <div class="form-group">
+                <label for="menteeGender">Gender (Optional)</label>
+                <select id="menteeGender">
+                    <option value="">Select Gender</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="Other">Other</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="menteeSchool">School (Optional)</label>
+                <input type="text" id="menteeSchool" placeholder="e.g. Harvard Medical School, Stanford University">
+            </div>
+            <div class="form-group">
+                <label for="menteeSchoolType">School Type (Optional)</label>
+                <select id="menteeSchoolType">
+                    <option value="">Select School Type</option>
+                    <option value="HS">High School</option>
+                    <option value="College">College/Undergraduate</option>
+                    <option value="Grad">Graduate School</option>
+                    <option value="Resident">Resident</option>
+                    <option value="Fellow">Fellow</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="menteeSchoolYear">School Year (Optional)</label>
+                <input type="text" id="menteeSchoolYear" placeholder="e.g. 1st Year, 2nd Year, PGY-1, etc.">
+            </div>
+            <div class="form-group">
+                <label for="menteeAddress">Address (Optional)</label>
+                <textarea id="menteeAddress" placeholder="Enter full address" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="menteeReferredBy">Referred By / Friends With (Optional)</label>
+                <input type="text" id="menteeReferredBy" placeholder="e.g. Dr. Smith, John Doe, LinkedIn, etc.">
+            </div>
             <div class="modal-actions">
                 <button class="btn-secondary" onclick="app.closeModal('addMenteeModal')">Cancel</button>
                 <button class="btn-primary" onclick="app.addMentee()">Add Mentee</button>
@@ -547,26 +665,254 @@
         </div>
     </div>
 
+    <!-- Bulk Import Modal -->
+    <div id="bulkImportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📥 Bulk Import from Google Sheets</h2>
+                <button class="close-btn" onclick="app.closeModal('bulkImportModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Import Options</label>
+                <div style="margin: 1rem 0;">
+                    <label style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                        <input type="radio" name="importType" value="fromExistingSheet" checked style="margin-right: 0.5rem;">
+                        Import from existing Google Sheet (your current sheet)
+                    </label>
+                    <label style="display: flex; align-items: center;">
+                        <input type="radio" name="importType" value="fromNewSheet" style="margin-right: 0.5rem;">
+                        Import from different Google Sheet
+                    </label>
+                </div>
+            </div>
+            <div id="newSheetConfig" style="display: none;">
+                <div class="form-group">
+                    <label for="importSheetId">Google Sheet ID</label>
+                    <input type="text" id="importSheetId" placeholder="Enter Google Sheet ID">
+                    <small>Get this from the sheet URL: docs.google.com/spreadsheets/d/SHEET_ID/edit</small>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Import Settings</label>
+                <div style="margin: 1rem 0;">
+                    <label style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                        <input type="checkbox" id="skipDuplicates" checked style="margin-right: 0.5rem;">
+                        Skip duplicates (based on name)
+                    </label>
+                    <label style="display: flex; align-items: center;">
+                        <input type="checkbox" id="clearExisting" style="margin-right: 0.5rem;">
+                        Clear existing data before import
+                    </label>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="app.closeModal('bulkImportModal')">Cancel</button>
+                <button class="btn-primary" onclick="app.startBulkImport()">Start Import</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Data Storage Adapter - abstraction layer for future Google Sheets integration
-        class StorageAdapter {
-            constructor() {
-                this.storageKey = 'menteeTrackerData';
+        // ========================================
+        // SIMPLE SETUP - JUST 2 STEPS!
+        // ========================================
+        
+        // STEP 1: Create a Google Sheet
+        // 1. Go to https://sheets.google.com
+        // 2. Create a new blank spreadsheet
+        // 3. Make it public: Share → Anyone with link can edit
+        // 4. Copy the Sheet ID from URL: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit
+        const GOOGLE_SHEET_ID = '1BxG85ifFPiy6oeHddlXWtBBoBjkid-Xl-qcD9UUsgdI';
+        
+        // STEP 2: Get Google API Key
+        // 1. Go to https://console.cloud.google.com/
+        // 2. Create project or select existing
+        // 3. Enable "Google Sheets API"
+        // 4. Go to Credentials → Create Credentials → API Key
+        // 5. Copy the API key here
+        const GOOGLE_API_KEY = 'AIzaSyBVS_7LEQzRphXh4pYvQO_QA2lbwyL-LVA';
+        
+        // ========================================
+        // THAT'S IT! No OAuth, no login required!
+        // ========================================
+        
+        // Simple encryption utilities (keeping for potential future use)
+        class SimpleCrypto {
+            static async encrypt(text, password) {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(text);
+                const key = await crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(password),
+                    { name: 'PBKDF2' },
+                    false,
+                    ['deriveBits', 'deriveKey']
+                );
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const derivedKey = await crypto.subtle.deriveKey(
+                    { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+                    key,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['encrypt']
+                );
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const encrypted = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    derivedKey,
+                    data
+                );
+                return {
+                    encrypted: Array.from(new Uint8Array(encrypted)),
+                    salt: Array.from(salt),
+                    iv: Array.from(iv)
+                };
+            }
+
+            static async decrypt(encryptedData, password) {
+                const encoder = new TextEncoder();
+                const decoder = new TextDecoder();
+                const key = await crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(password),
+                    { name: 'PBKDF2' },
+                    false,
+                    ['deriveBits', 'deriveKey']
+                );
+                const derivedKey = await crypto.subtle.deriveKey(
+                    { name: 'PBKDF2', salt: new Uint8Array(encryptedData.salt), iterations: 100000, hash: 'SHA-256' },
+                    key,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['decrypt']
+                );
+                const decrypted = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: new Uint8Array(encryptedData.iv) },
+                    derivedKey,
+                    new Uint8Array(encryptedData.encrypted)
+                );
+                return decoder.decode(decrypted);
+            }
+        }
+
+        // Google Sheets Storage Adapter
+        class GoogleSheetsAdapter {
+            constructor(sheetId, apiKey) {
+                this.sheetId = sheetId;
+                this.apiKey = apiKey;
+                this.baseUrl = 'https://sheets.googleapis.com/v4/spreadsheets';
+                this.range = 'Sheet1!A:S'; // Extended range for all new fields
+            }
+
+            async makeRequest(url, options = {}) {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Google Sheets API error: ${response.status} ${response.statusText}`);
+                }
+                
+                return response.json();
+            }
+
+            async getSheetData() {
+                const url = `${this.baseUrl}/${this.sheetId}/values/${this.range}?key=${this.apiKey}`;
+                const data = await this.makeRequest(url);
+                return data.values || [];
+            }
+
+            async updateSheetData(values) {
+                const url = `${this.baseUrl}/${this.sheetId}/values/${this.range}?valueInputOption=RAW&key=${this.apiKey}`;
+                const body = {
+                    values: values
+                };
+                
+                return this.makeRequest(url, {
+                    method: 'PUT',
+                    body: JSON.stringify(body)
+                });
             }
 
             async getAllMentees() {
-                const data = localStorage.getItem(this.storageKey);
-                return data ? JSON.parse(data) : [];
+                try {
+                    const rows = await this.getSheetData();
+                    
+                    // Skip header row if it exists
+                    const dataRows = rows.length > 1 ? rows.slice(1) : rows;
+                    
+                    return dataRows.map(row => ({
+                        id: row[0] || '',
+                        name: row[1] || '',
+                        specialty: row[2] || '',
+                        phone: row[3] || '',
+                        email: row[4] || '',
+                        year: row[5] || '',
+                        institution: row[6] || '',
+                        gender: row[7] || '',
+                        school: row[8] || '',
+                        schoolType: row[9] || '',
+                        schoolYear: row[10] || '',
+                        address: row[11] || '',
+                        referredBy: row[12] || '',
+                        notes: row[13] || '',
+                        lastContact: row[14] || null,
+                        interactions: row[15] ? JSON.parse(row[15]) : [],
+                        createdAt: row[16] || new Date().toISOString(),
+                        updatedAt: row[17] || new Date().toISOString()
+                    }));
+                } catch (error) {
+                    console.error('Error loading mentees from Google Sheets:', error);
+                    return [];
+                }
             }
 
             async saveMentees(mentees) {
-                localStorage.setItem(this.storageKey, JSON.stringify(mentees));
+                try {
+                    // Create header row
+                    const headerRow = ['id', 'name', 'specialty', 'phone', 'email', 'year', 'institution', 'gender', 'school', 'schoolType', 'schoolYear', 'address', 'referredBy', 'notes', 'lastContact', 'interactions', 'createdAt', 'updatedAt'];
+                    
+                    // Convert mentees to rows
+                    const dataRows = mentees.map(mentee => [
+                        mentee.id || '',
+                        mentee.name || '',
+                        mentee.specialty || '',
+                        mentee.phone || '',
+                        mentee.email || '',
+                        mentee.year || '',
+                        mentee.institution || '',
+                        mentee.gender || '',
+                        mentee.school || '',
+                        mentee.schoolType || '',
+                        mentee.schoolYear || '',
+                        mentee.address || '',
+                        mentee.referredBy || '',
+                        mentee.notes || '',
+                        mentee.lastContact || '',
+                        JSON.stringify(mentee.interactions || []),
+                        mentee.createdAt || new Date().toISOString(),
+                        mentee.updatedAt || new Date().toISOString()
+                    ]);
+                    
+                    // Combine header and data
+                    const allRows = [headerRow, ...dataRows];
+                    
+                    await this.updateSheetData(allRows);
+                } catch (error) {
+                    console.error('Error saving mentees to Google Sheets:', error);
+                    throw error;
+                }
             }
 
             async addMentee(mentee) {
                 const mentees = await this.getAllMentees();
                 mentee.id = this.generateId();
                 mentee.createdAt = new Date().toISOString();
+                mentee.updatedAt = new Date().toISOString();
                 mentees.push(mentee);
                 await this.saveMentees(mentees);
                 return mentee;
@@ -597,22 +943,46 @@
         // Main Application
         class MenteeTrackerApp {
             constructor() {
-                this.storage = new StorageAdapter();
+                // Check if configuration is set
+                if (GOOGLE_SHEET_ID === 'YOUR_GOOGLE_SHEET_ID' || GOOGLE_API_KEY === 'YOUR_GOOGLE_API_KEY') {
+                    console.error('Please configure GOOGLE_SHEET_ID and GOOGLE_API_KEY at the top of this file');
+                    alert('Please configure Google Sheets settings before using the app. Check the console for instructions.');
+                }
+                
+                this.storage = new GoogleSheetsAdapter(GOOGLE_SHEET_ID, GOOGLE_API_KEY);
                 this.mentees = [];
                 this.currentEditingMenteeId = null;
                 this.searchTerm = '';
             }
 
             async init() {
-                await this.loadMentees();
-                
-                // Initialize with fake data if empty
-                if (this.mentees.length === 0) {
-                    await this.generateFakeMentees();
+                try {
+                    this.updateConnectionStatus('loading', 'Connecting to Google Sheets...');
+                    
+                    await this.loadMentees();
+                    
+                    // Initialize with fake data if empty (for testing)
+                    if (this.mentees.length === 0) {
+                        console.log('No data found, initializing with sample data...');
+                        await this.generateFakeMentees();
+                    }
+                    
+                    this.updateConnectionStatus('connected', '✅ Connected to Google Sheets');
+                    this.setupEventListeners();
+                    this.render();
+                } catch (error) {
+                    console.error('Error initializing app:', error);
+                    this.updateConnectionStatus('error', '❌ Error connecting to Google Sheets. Check configuration.');
+                    this.showToast('Error connecting to Google Sheets. Please check your configuration.', 'error');
                 }
+            }
+
+            updateConnectionStatus(type, message) {
+                const statusEl = document.getElementById('connectionStatus');
+                const textEl = document.getElementById('statusText');
                 
-                this.setupEventListeners();
-                this.render();
+                statusEl.className = `connection-status ${type}`;
+                textEl.textContent = message;
             }
 
             setupEventListeners() {
@@ -740,19 +1110,28 @@
                 this.render();
                 
                 // Show success toast
-                this.showToast(`${type === 'text' ? '📱 Text' : '📞 Call'} logged successfully!`, 'success');
+                const actionNames = {
+                    'text': '📱 Text',
+                    'call': '📞 Call',
+                    'email': '📧 Email'
+                };
+                this.showToast(`${actionNames[type] || type} logged successfully!`, 'success');
             }
 
             initiateContact(menteeId, type) {
                 const mentee = this.mentees.find(m => m.id === menteeId);
-                if (!mentee || !mentee.phone) return;
+                if (!mentee) return;
 
-                // Clean phone number (remove formatting)
-                const cleanPhone = mentee.phone.replace(/\D/g, '');
-                
-                if (type === 'text') {
+                if (type === 'email') {
+                    if (!mentee.email) return;
+                    window.location.href = `mailto:${mentee.email}`;
+                } else if (type === 'text') {
+                    if (!mentee.phone) return;
+                    const cleanPhone = mentee.phone.replace(/\D/g, '');
                     window.location.href = `sms:${cleanPhone}`;
-                } else {
+                } else if (type === 'call') {
+                    if (!mentee.phone) return;
+                    const cleanPhone = mentee.phone.replace(/\D/g, '');
                     window.location.href = `tel:${cleanPhone}`;
                 }
 
@@ -797,6 +1176,15 @@
                 document.getElementById('menteeName').value = '';
                 document.getElementById('menteeSpecialty').value = '';
                 document.getElementById('menteePhone').value = '';
+                document.getElementById('menteeEmail').value = '';
+                document.getElementById('menteeYear').value = '';
+                document.getElementById('menteeInstitution').value = '';
+                document.getElementById('menteeGender').value = '';
+                document.getElementById('menteeSchool').value = '';
+                document.getElementById('menteeSchoolType').value = '';
+                document.getElementById('menteeSchoolYear').value = '';
+                document.getElementById('menteeAddress').value = '';
+                document.getElementById('menteeReferredBy').value = '';
                 document.getElementById('addMenteeModal').classList.add('active');
             }
 
@@ -804,6 +1192,15 @@
                 const name = document.getElementById('menteeName').value.trim();
                 const specialty = document.getElementById('menteeSpecialty').value.trim();
                 const phone = document.getElementById('menteePhone').value.trim();
+                const email = document.getElementById('menteeEmail').value.trim();
+                const year = document.getElementById('menteeYear').value.trim();
+                const institution = document.getElementById('menteeInstitution').value.trim();
+                const gender = document.getElementById('menteeGender').value;
+                const school = document.getElementById('menteeSchool').value.trim();
+                const schoolType = document.getElementById('menteeSchoolType').value;
+                const schoolYear = document.getElementById('menteeSchoolYear').value.trim();
+                const address = document.getElementById('menteeAddress').value.trim();
+                const referredBy = document.getElementById('menteeReferredBy').value.trim();
 
                 if (!name) {
                     alert('Please enter a name');
@@ -814,6 +1211,15 @@
                     name,
                     specialty: specialty || 'General',
                     phone: phone || '',
+                    email: email || '',
+                    year: year || '',
+                    institution: institution || '',
+                    gender: gender || '',
+                    school: school || '',
+                    schoolType: schoolType || '',
+                    schoolYear: schoolYear || '',
+                    address: address || '',
+                    referredBy: referredBy || '',
                     lastContact: null,
                     notes: '',
                     interactions: []
@@ -841,6 +1247,136 @@
                 document.getElementById(modalId).classList.remove('active');
                 this.currentEditingMenteeId = null;
             }
+
+            showBulkImportModal() {
+                document.getElementById('bulkImportModal').classList.add('active');
+                
+                // Add event listeners for radio buttons
+                document.querySelectorAll('input[name="importType"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        const newSheetConfig = document.getElementById('newSheetConfig');
+                        if (e.target.value === 'fromNewSheet') {
+                            newSheetConfig.style.display = 'block';
+                        } else {
+                            newSheetConfig.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            async startBulkImport() {
+                const importType = document.querySelector('input[name="importType"]:checked').value;
+                const skipDuplicates = document.getElementById('skipDuplicates').checked;
+                const clearExisting = document.getElementById('clearExisting').checked;
+                
+                let sourceSheetId = GOOGLE_SHEET_ID;
+                if (importType === 'fromNewSheet') {
+                    sourceSheetId = document.getElementById('importSheetId').value.trim();
+                    if (!sourceSheetId) {
+                        alert('Please enter a Google Sheet ID');
+                        return;
+                    }
+                }
+
+                try {
+                    this.updateConnectionStatus('loading', 'Importing data from Google Sheets...');
+                    
+                    // Create a temporary adapter for the source sheet
+                    const sourceAdapter = new GoogleSheetsAdapter(sourceSheetId, GOOGLE_API_KEY);
+                    const sourceData = await sourceAdapter.getSheetData();
+                    
+                    if (sourceData.length === 0) {
+                        alert('No data found in the source sheet');
+                        return;
+                    }
+
+                    // Parse the source data
+                    const importedMentees = this.parseImportedData(sourceData);
+                    
+                    if (importedMentees.length === 0) {
+                        alert('No valid mentee data found to import');
+                        return;
+                    }
+
+                    // Get current mentees
+                    let currentMentees = await this.storage.getAllMentees();
+                    
+                    if (clearExisting) {
+                        currentMentees = [];
+                    }
+
+                    // Merge data
+                    let finalMentees = [...currentMentees];
+                    let importedCount = 0;
+                    let skippedCount = 0;
+
+                    for (const importedMentee of importedMentees) {
+                        if (skipDuplicates) {
+                            const exists = finalMentees.some(m => 
+                                m.name.toLowerCase() === importedMentee.name.toLowerCase()
+                            );
+                            if (exists) {
+                                skippedCount++;
+                                continue;
+                            }
+                        }
+                        
+                        // Add creation timestamp
+                        importedMentee.createdAt = new Date().toISOString();
+                        importedMentee.updatedAt = new Date().toISOString();
+                        
+                        finalMentees.push(importedMentee);
+                        importedCount++;
+                    }
+
+                    // Save to Google Sheets
+                    await this.storage.saveMentees(finalMentees);
+                    await this.loadMentees();
+                    this.render();
+                    
+                    this.closeModal('bulkImportModal');
+                    this.updateConnectionStatus('connected', '✅ Connected to Google Sheets');
+                    
+                    this.showToast(
+                        `Import complete! ${importedCount} mentees imported, ${skippedCount} duplicates skipped.`, 
+                        'success'
+                    );
+                    
+                } catch (error) {
+                    console.error('Bulk import error:', error);
+                    this.updateConnectionStatus('error', '❌ Import failed. Check console for details.');
+                    alert('Import failed: ' + error.message);
+                }
+            }
+
+            parseImportedData(sourceData) {
+                // Skip header row if it exists
+                const dataRows = sourceData.length > 1 ? sourceData.slice(1) : sourceData;
+                
+                return dataRows.map((row, index) => {
+                    // Flexible parsing - try to map common column patterns
+                    const mentee = {
+                        name: row[0] || row[1] || `Imported Mentee ${index + 1}`,
+                        specialty: row[2] || row[3] || 'General',
+                        phone: row[3] || row[4] || '',
+                        email: row[4] || row[5] || '',
+                        year: row[5] || row[6] || '',
+                        institution: row[6] || row[7] || '',
+                        gender: row[7] || row[8] || '',
+                        school: row[8] || row[9] || '',
+                        schoolType: row[9] || row[10] || '',
+                        schoolYear: row[10] || row[11] || '',
+                        address: row[11] || row[12] || '',
+                        referredBy: row[12] || row[13] || '',
+                        notes: row[13] || row[14] || '',
+                        lastContact: null,
+                        interactions: []
+                    };
+                    
+                    return mentee;
+                }).filter(mentee => mentee.name && mentee.name !== 'Imported Mentee');
+            }
+
 
             exportData() {
                 const dataStr = JSON.stringify(this.mentees, null, 2);
@@ -921,6 +1457,9 @@
                                 <div class="mentee-info">
                                     <h3>${this.escapeHtml(mentee.name)}</h3>
                                     <div class="mentee-specialty">${this.escapeHtml(mentee.specialty)}</div>
+                                    ${mentee.schoolType && mentee.schoolYear ? `<div class="mentee-detail">${this.escapeHtml(mentee.schoolType)} - ${this.escapeHtml(mentee.schoolYear)}</div>` : ''}
+                                    ${mentee.school ? `<div class="mentee-detail">${this.escapeHtml(mentee.school)}</div>` : ''}
+                                    ${mentee.referredBy ? `<div class="mentee-detail">Referred by: ${this.escapeHtml(mentee.referredBy)}</div>` : ''}
                                 </div>
                                 <div class="priority-badge ${priorityInfo.color}">
                                     ${priorityInfo.label}
@@ -943,6 +1482,15 @@
                                         📞 Log Call
                                     </button>
                                 `}
+                                ${mentee.email ? `
+                                    <button class="btn-secondary btn-small" onclick="app.initiateContact('${mentee.id}', 'email')">
+                                        📧 Email
+                                    </button>
+                                ` : `
+                                    <button class="btn-secondary btn-small" onclick="app.logInteraction('${mentee.id}', 'email')">
+                                        📧 Log Email
+                                    </button>
+                                `}
                                 <button class="btn-secondary btn-small" onclick="app.showEditNotesModal('${mentee.id}')">
                                     📝 Notes
                                 </button>
@@ -962,7 +1510,7 @@
                                     <div class="history-title">Recent Interactions</div>
                                     ${recentInteractions.map(interaction => `
                                         <div class="history-item">
-                                            <span class="history-icon">${interaction.type === 'text' ? '📱' : '📞'}</span>
+                                            <span class="history-icon">${interaction.type === 'text' ? '📱' : interaction.type === 'call' ? '📞' : '📧'}</span>
                                             ${this.formatDate(interaction.timestamp)}
                                         </div>
                                     `).join('')}
