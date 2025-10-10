@@ -8,6 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Mentee Tracker">
     <title>Mentee Connection Tracker</title>
+    <script src="https://apis.google.com/js/api.js"></script>
     <style>
         * {
             margin: 0;
@@ -724,13 +725,15 @@
         // 4. Copy the Sheet ID from URL: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit
         const GOOGLE_SHEET_ID = '1ztKS86TWP83qWftXJODbRZrFtpVis5IvIAS31TR1K4M';
         
-        // STEP 2: Get Google API Key
+        // STEP 2: Get Google OAuth2 Client ID
         // 1. Go to https://console.cloud.google.com/
         // 2. Create project or select existing
         // 3. Enable "Google Sheets API"
-        // 4. Go to Credentials → Create Credentials → API Key
-        // 5. Copy the API key here
-        const GOOGLE_API_KEY = 'AIzaSyBVS_7LEQzRphXh4pYvQO_QA2lbwyL-LVA';
+        // 4. Go to Credentials → Create Credentials → OAuth 2.0 Client ID
+        // 5. Application type: Web Application
+        // 6. Authorized origins: https://lloydhey.github.io
+        // 7. Copy the Client ID here
+        const GOOGLE_CLIENT_ID = '48894897363-42h3nabi6v0b8kcistmisb87kup8tlq3.apps.googleusercontent.com';
         
         // ========================================
         // THAT'S IT! No OAuth, no login required!
@@ -940,16 +943,92 @@
             }
         }
 
+        // Google OAuth2 Authentication
+        class GoogleAuth {
+            constructor(clientId) {
+                this.clientId = clientId;
+                this.accessToken = null;
+                this.isAuthenticated = false;
+            }
+
+            async authenticate() {
+                return new Promise((resolve, reject) => {
+                    gapi.load('auth2', () => {
+                        gapi.auth2.init({
+                            client_id: this.clientId
+                        }).then(() => {
+                            const authInstance = gapi.auth2.getAuthInstance();
+                            authInstance.signIn({
+                                scope: 'https://www.googleapis.com/auth/spreadsheets'
+                            }).then((googleUser) => {
+                                this.accessToken = googleUser.getAuthResponse().access_token;
+                                this.isAuthenticated = true;
+                                resolve(this.accessToken);
+                            }).catch(reject);
+                        }).catch(reject);
+                    });
+                });
+            }
+
+            async makeAuthenticatedRequest(url, options = {}) {
+                if (!this.isAuthenticated) {
+                    await this.authenticate();
+                }
+
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Authorization': `Bearer ${this.accessToken}`,
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Google Sheets API error: ${response.status} ${response.statusText}`);
+                }
+                
+                return response.json();
+            }
+        }
+
+        // Google Sheets Storage Adapter with OAuth2
+        class GoogleSheetsAdapter {
+            constructor(sheetId, clientId) {
+                this.sheetId = sheetId;
+                this.auth = new GoogleAuth(clientId);
+                this.baseUrl = 'https://sheets.googleapis.com/v4/spreadsheets';
+                this.range = 'Sheet1!A:S';
+            }
+
+            async getSheetData() {
+                const url = `${this.baseUrl}/${this.sheetId}/values/${this.range}`;
+                const data = await this.auth.makeAuthenticatedRequest(url);
+                return data.values || [];
+            }
+
+            async updateSheetData(values) {
+                const url = `${this.baseUrl}/${this.sheetId}/values/${this.range}?valueInputOption=RAW`;
+                const body = {
+                    values: values
+                };
+                
+                return this.auth.makeAuthenticatedRequest(url, {
+                    method: 'PUT',
+                    body: JSON.stringify(body)
+                });
+            }
+
         // Main Application
         class MenteeTrackerApp {
             constructor() {
                 // Check if configuration is set
-                if (GOOGLE_SHEET_ID === 'YOUR_GOOGLE_SHEET_ID' || GOOGLE_API_KEY === 'YOUR_GOOGLE_API_KEY') {
-                    console.error('Please configure GOOGLE_SHEET_ID and GOOGLE_API_KEY at the top of this file');
-                    alert('Please configure Google Sheets settings before using the app. Check the console for instructions.');
+                if (GOOGLE_SHEET_ID === 'YOUR_GOOGLE_SHEET_ID' || GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
+                    console.error('Please configure GOOGLE_SHEET_ID and GOOGLE_CLIENT_ID at the top of this file');
+                    alert('Please configure Google OAuth2 settings before using the app. Check the console for instructions.');
                 }
                 
-                this.storage = new GoogleSheetsAdapter(GOOGLE_SHEET_ID, GOOGLE_API_KEY);
+                this.storage = new GoogleSheetsAdapter(GOOGLE_SHEET_ID, GOOGLE_CLIENT_ID);
                 this.mentees = [];
                 this.currentEditingMenteeId = null;
                 this.searchTerm = '';
@@ -957,7 +1036,12 @@
 
             async init() {
                 try {
-                    this.updateConnectionStatus('loading', 'Connecting to Google Sheets...');
+                    this.updateConnectionStatus('loading', 'Authenticating with Google...');
+                    
+                    // Authenticate with Google
+                    await this.storage.auth.authenticate();
+                    
+                    this.updateConnectionStatus('loading', 'Loading data from Google Sheets...');
                     
                     await this.loadMentees();
                     
@@ -972,8 +1056,8 @@
                     this.render();
                 } catch (error) {
                     console.error('Error initializing app:', error);
-                    this.updateConnectionStatus('error', '❌ Error connecting to Google Sheets. Check configuration.');
-                    this.showToast('Error connecting to Google Sheets. Please check your configuration.', 'error');
+                    this.updateConnectionStatus('error', '❌ Authentication failed. Please refresh and try again.');
+                    this.showToast('Authentication failed. Please refresh the page and try again.', 'error');
                 }
             }
 
@@ -1282,7 +1366,7 @@
                     this.updateConnectionStatus('loading', 'Importing data from Google Sheets...');
                     
                     // Create a temporary adapter for the source sheet
-                    const sourceAdapter = new GoogleSheetsAdapter(sourceSheetId, GOOGLE_API_KEY);
+                    const sourceAdapter = new GoogleSheetsAdapter(sourceSheetId, GOOGLE_CLIENT_ID);
                     const sourceData = await sourceAdapter.getSheetData();
                     
                     if (sourceData.length === 0) {
