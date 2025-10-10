@@ -1039,6 +1039,108 @@
                 });
             }
 
+            async getAllMentees() {
+                try {
+                    const rows = await this.getSheetData();
+                    
+                    // Skip header row if it exists
+                    const dataRows = rows.length > 1 ? rows.slice(1) : rows;
+                    
+                    return dataRows.map(row => ({
+                        id: row[0] || '',
+                        name: row[1] || '',
+                        specialty: row[2] || '',
+                        phone: row[3] || '',
+                        email: row[4] || '',
+                        year: row[5] || '',
+                        institution: row[6] || '',
+                        gender: row[7] || '',
+                        school: row[8] || '',
+                        schoolType: row[9] || '',
+                        schoolYear: row[10] || '',
+                        address: row[11] || '',
+                        referredBy: row[12] || '',
+                        notes: row[13] || '',
+                        lastContact: row[14] || null,
+                        interactions: row[15] ? JSON.parse(row[15]) : [],
+                        createdAt: row[16] || new Date().toISOString(),
+                        updatedAt: row[17] || new Date().toISOString()
+                    }));
+                } catch (error) {
+                    console.error('Error loading mentees from Google Sheets:', error);
+                    return [];
+                }
+            }
+
+            async saveMentees(mentees) {
+                try {
+                    // Create header row
+                    const headerRow = ['id', 'name', 'specialty', 'phone', 'email', 'year', 'institution', 'gender', 'school', 'schoolType', 'schoolYear', 'address', 'referredBy', 'notes', 'lastContact', 'interactions', 'createdAt', 'updatedAt'];
+                    
+                    // Convert mentees to rows
+                    const dataRows = mentees.map(mentee => [
+                        mentee.id || '',
+                        mentee.name || '',
+                        mentee.specialty || '',
+                        mentee.phone || '',
+                        mentee.email || '',
+                        mentee.year || '',
+                        mentee.institution || '',
+                        mentee.gender || '',
+                        mentee.school || '',
+                        mentee.schoolType || '',
+                        mentee.schoolYear || '',
+                        mentee.address || '',
+                        mentee.referredBy || '',
+                        mentee.notes || '',
+                        mentee.lastContact || '',
+                        JSON.stringify(mentee.interactions || []),
+                        mentee.createdAt || new Date().toISOString(),
+                        mentee.updatedAt || new Date().toISOString()
+                    ]);
+                    
+                    // Combine header and data
+                    const allRows = [headerRow, ...dataRows];
+                    
+                    await this.updateSheetData(allRows);
+                } catch (error) {
+                    console.error('Error saving mentees to Google Sheets:', error);
+                    throw error;
+                }
+            }
+
+            async addMentee(mentee) {
+                const mentees = await this.getAllMentees();
+                mentee.id = this.generateId();
+                mentee.createdAt = new Date().toISOString();
+                mentee.updatedAt = new Date().toISOString();
+                mentees.push(mentee);
+                await this.saveMentees(mentees);
+                return mentee;
+            }
+
+            async updateMentee(id, updates) {
+                const mentees = await this.getAllMentees();
+                const index = mentees.findIndex(m => m.id === id);
+                if (index !== -1) {
+                    mentees[index] = { ...mentees[index], ...updates, updatedAt: new Date().toISOString() };
+                    await this.saveMentees(mentees);
+                    return mentees[index];
+                }
+                return null;
+            }
+
+            async deleteMentee(id) {
+                const mentees = await this.getAllMentees();
+                const filtered = mentees.filter(m => m.id !== id);
+                await this.saveMentees(filtered);
+            }
+
+            generateId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            }
+        }
+
         // Main Application
         class MenteeTrackerApp {
             constructor() {
