@@ -1029,8 +1029,10 @@
             }
 
             async authenticateApp() {
+                console.log('authenticateApp called');
                 return new Promise((resolve) => {
                     // Create password modal
+                    console.log('Creating password modal');
                     const modal = document.createElement('div');
                     modal.className = 'modal';
                     modal.innerHTML = `
@@ -1081,8 +1083,10 @@
 
             async init() {
                 try {
+                    console.log('App init started, isAuthenticated:', this.isAuthenticated);
                     // Check app password first
                     if (!this.isAuthenticated) {
+                        console.log('Not authenticated, showing password prompt');
                         await this.authenticateApp();
                         return;
                     }
