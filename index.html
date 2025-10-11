@@ -1162,13 +1162,15 @@
 
                 if (this.searchTerm) {
                     filtered = filtered.filter(m => 
-                        m.name.toLowerCase().includes(this.searchTerm) ||
-                        m.mobile.toLowerCase().includes(this.searchTerm) ||
-                        m.email.toLowerCase().includes(this.searchTerm) ||
-                        m.qs.toLowerCase().includes(this.searchTerm) ||
-                        m.lot.toLowerCase().includes(this.searchTerm) ||
-                        m.loc.toLowerCase().includes(this.searchTerm) ||
-                        m.notes.toLowerCase().includes(this.searchTerm)
+                        (m.name || '').toLowerCase().includes(this.searchTerm) ||
+                        (m.mobile || '').toLowerCase().includes(this.searchTerm) ||
+                        (m.email || '').toLowerCase().includes(this.searchTerm) ||
+                        (m.qs || '').toLowerCase().includes(this.searchTerm) ||
+                        (m.lot || '').toLowerCase().includes(this.searchTerm) ||
+                        (m.loc || '').toLowerCase().includes(this.searchTerm) ||
+                        (m.typ || '').toLowerCase().includes(this.searchTerm) ||
+                        (m.yr || '').toLowerCase().includes(this.searchTerm) ||
+                        (m.notes || '').toLowerCase().includes(this.searchTerm)
                     );
                 }
 
