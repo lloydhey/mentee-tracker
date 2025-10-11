@@ -746,10 +746,6 @@
         // 7. Copy the Client ID here
         const GOOGLE_CLIENT_ID = '48894897363-42h3nabi6v0b8kcistmisb87kup8tlq3.apps.googleusercontent.com';
         
-        // STEP 3: App Security Password
-        // Set a password to protect access to the app
-        const APP_PASSWORD = 'mentee2024!'; // Change this to your secure password
-        
         // ========================================
         // THAT'S IT! No OAuth, no login required!
         // ========================================
@@ -1025,73 +1021,11 @@
                 this.mentees = [];
                 this.currentEditingMenteeId = null;
                 this.searchTerm = '';
-                this.isAuthenticated = false;
-                console.log('MenteeTrackerApp constructor: isAuthenticated set to false');
             }
 
-            async authenticateApp() {
-                console.log('authenticateApp called');
-                return new Promise((resolve) => {
-                    // Create password modal
-                    console.log('Creating password modal');
-                    const modal = document.createElement('div');
-                    modal.className = 'modal';
-                    modal.innerHTML = `
-                        <div class="modal-content">
-                            <h2>🔒 Access Required</h2>
-                            <p>Please enter the password to access the Mentee Tracker:</p>
-                            <input type="password" id="appPassword" placeholder="Enter password" autocomplete="current-password">
-                            <div class="modal-buttons">
-                                <button id="loginBtn" class="btn btn-primary">Login</button>
-                            </div>
-                            <div id="passwordError" class="error-message" style="display: none;">
-                                Incorrect password. Please try again.
-                            </div>
-                        </div>
-                    `;
-                    
-                    document.body.appendChild(modal);
-                    
-                    const passwordInput = document.getElementById('appPassword');
-                    const loginBtn = document.getElementById('loginBtn');
-                    const errorDiv = document.getElementById('passwordError');
-                    
-                    const handleLogin = () => {
-                        const enteredPassword = passwordInput.value;
-                        if (enteredPassword === APP_PASSWORD) {
-                            this.isAuthenticated = true;
-                            document.body.removeChild(modal);
-                            this.init(); // Restart initialization
-                            resolve();
-                        } else {
-                            errorDiv.style.display = 'block';
-                            passwordInput.value = '';
-                            passwordInput.focus();
-                        }
-                    };
-                    
-                    loginBtn.addEventListener('click', handleLogin);
-                    passwordInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            handleLogin();
-                        }
-                    });
-                    
-                    // Focus on password input
-                    setTimeout(() => passwordInput.focus(), 100);
-                });
-            }
 
             async init() {
                 try {
-                    console.log('App init started, isAuthenticated:', this.isAuthenticated);
-                    // Check app password first
-                    if (!this.isAuthenticated) {
-                        console.log('Not authenticated, showing password prompt');
-                        await this.authenticateApp();
-                        return;
-                    }
-                    
                     this.updateConnectionStatus('loading', 'Loading Google APIs...');
                     
                     // Wait for Google APIs to load
@@ -1711,9 +1645,7 @@
         }
 
         // Initialize app
-        console.log('Starting app initialization...');
         const app = new MenteeTrackerApp();
-        console.log('App created, calling init...');
         app.init();
     </script>
 </body>
