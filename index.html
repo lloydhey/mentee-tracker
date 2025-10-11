@@ -694,7 +694,7 @@
                 <div style="margin: 1rem 0;">
                     <label style="display: flex; align-items: center; margin-bottom: 0.5rem;">
                         <input type="radio" name="importType" value="fromExistingSheet" checked style="margin-right: 0.5rem;">
-                        Import from your Quad Squad spreadsheet (100 mentees)
+                        Import from your clean Quad Squad spreadsheet (112 mentees)
                     </label>
                     <label style="display: flex; align-items: center;">
                         <input type="radio" name="importType" value="fromNewSheet" style="margin-right: 0.5rem;">
@@ -739,7 +739,7 @@
         // 2. Create a new blank spreadsheet
         // 3. Make it public: Share → Anyone with link can edit
         // 4. Copy the Sheet ID from URL: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit
-        const GOOGLE_SHEET_ID = '11HX9mRyI_sQIPnQdao2BcUuDYvqh9wLtVAFQjOmxtJo';
+        const GOOGLE_SHEET_ID = '1wuo6HFBtSFWDH95HZ1uCtLVZ777uVVtcp0GI95Qcyvw';
         
         // STEP 2: Get Google OAuth2 Client ID
         // 1. Go to https://console.cloud.google.com/
@@ -1090,12 +1090,6 @@
                     
                     await this.loadMentees();
                     
-                    // Initialize with fake data if empty (for testing)
-                    if (this.mentees.length === 0) {
-                        console.log('No data found, initializing with sample data...');
-                        await this.generateFakeMentees();
-                    }
-                    
                     this.updateConnectionStatus('connected', '✅ Connected to Google Sheets');
                     this.setupEventListeners();
                     this.render();
@@ -1155,31 +1149,6 @@
                 this.mentees = await this.storage.getAllMentees();
             }
 
-            async generateFakeMentees() {
-                const names = ['Alex Chen', 'Maria Garcia', 'James Wilson', 'Priya Patel', 'David Kim', 'Sarah Johnson'];
-                const specialties = ['Cardiology', 'Neurology', 'Internal Medicine', 'Surgery', 'Pediatrics', 'Psychiatry'];
-                const phones = ['(555) 123-4567', '(555) 234-5678', '(555) 345-6789', '(555) 456-7890', '(555) 567-8901', '(555) 678-9012'];
-                
-                const fakeMentees = names.map((name, i) => ({
-                    name,
-                    specialty: specialties[i],
-                    phone: phones[i],
-                    lastContact: new Date(Date.now() - (i + 1) * 3 * 24 * 60 * 60 * 1000).toISOString(),
-                    notes: i % 2 === 0 ? 'Interested in research opportunities. Preparing for boards.' : '',
-                    interactions: [
-                        {
-                            type: i % 2 === 0 ? 'text' : 'call',
-                            timestamp: new Date(Date.now() - (i + 1) * 3 * 24 * 60 * 60 * 1000).toISOString()
-                        }
-                    ]
-                }));
-
-                for (const mentee of fakeMentees) {
-                    await this.storage.addMentee(mentee);
-                }
-
-                await this.loadMentees();
-            }
 
             getFilteredMentees() {
                 let filtered = this.mentees;
