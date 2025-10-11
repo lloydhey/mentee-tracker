@@ -933,24 +933,24 @@
                     const dataRows = rows.length > 1 ? rows.slice(1) : rows;
                     
                     return dataRows.map(row => ({
-                        id: row[0] || '',
-                        name: row[0] || '',           // A: NAME
-                        mobile: row[1] || '',         // B: MOBILE
-                        email: row[2] || '',          // C: EMAIL
-                        fu: row[3] || '14',           // D: FU (follow-up days)
-                        qs: row[4] || '',             // E: QS (Quad Squad)
-                        poc: row[5] || '',            // F: POC (Point of Contact)
-                        mf: row[6] || '',             // G: MF (Male/Female)
-                        lot: row[7] || '',            // H: LOT (Leg of Training)
-                        typ: row[8] || '',            // I: TYP (Type of School)
-                        loc: row[9] || '',            // J: LOC (Location)
-                        yr: row[10] || '',            // K: YR (Year)
-                        notes: row[11] || '',         // L: NOTES
-                        address: row[12] || '',       // M: ADDRESS
-                        lastContact: row[13] || null,
-                        interactions: row[14] ? JSON.parse(row[14]) : [],
-                        createdAt: row[15] || new Date().toISOString(),
-                        updatedAt: row[16] || new Date().toISOString()
+                        id: row[0] || this.generateId(), // A: ID (generate if blank)
+                        name: row[1] || '',              // B: NAME
+                        mobile: row[2] || '',            // C: MOBILE
+                        email: row[3] || '',             // D: EMAIL
+                        fu: row[4] || '14',              // E: FU (follow-up days)
+                        qs: row[5] || '',                // F: QS (Quad Squad)
+                        poc: row[6] || '',               // G: POC (Point of Contact)
+                        mf: row[7] || '',                // H: MF (Male/Female)
+                        lot: row[8] || '',               // I: LOT (Leg of Training)
+                        typ: row[9] || '',               // J: TYP (Type of School)
+                        loc: row[10] || '',              // K: LOC (Location)
+                        yr: row[11] || '',               // L: YR (Year)
+                        notes: row[12] || '',            // M: NOTES
+                        address: row[13] || '',          // N: ADDRESS
+                        lastContact: row[14] || null,
+                        interactions: row[15] ? JSON.parse(row[15]) : [],
+                        createdAt: row[16] || new Date().toISOString(),
+                        updatedAt: row[17] || new Date().toISOString()
                     }));
                 } catch (error) {
                     console.error('Error loading mentees from Google Sheets:', error);
@@ -965,20 +965,20 @@
                     
                     // Convert mentees to rows
                     const dataRows = mentees.map(mentee => [
-                        mentee.id || '',
-                        mentee.name || '',           // A: NAME
-                        mentee.mobile || '',         // B: MOBILE
-                        mentee.email || '',          // C: EMAIL
-                        mentee.fu || '14',           // D: FU (follow-up days)
-                        mentee.qs || '',             // E: QS (Quad Squad)
-                        mentee.poc || '',            // F: POC (Point of Contact)
-                        mentee.mf || '',             // G: MF (Male/Female)
-                        mentee.lot || '',            // H: LOT (Leg of Training)
-                        mentee.typ || '',            // I: TYP (Type of School)
-                        mentee.loc || '',            // J: LOC (Location)
-                        mentee.yr || '',             // K: YR (Year)
-                        mentee.notes || '',          // L: NOTES
-                        mentee.address || '',        // M: ADDRESS
+                        mentee.id || this.generateId(), // A: ID
+                        mentee.name || '',              // B: NAME
+                        mentee.mobile || '',            // C: MOBILE
+                        mentee.email || '',             // D: EMAIL
+                        mentee.fu || '14',              // E: FU (follow-up days)
+                        mentee.qs || '',                // F: QS (Quad Squad)
+                        mentee.poc || '',               // G: POC (Point of Contact)
+                        mentee.mf || '',                // H: MF (Male/Female)
+                        mentee.lot || '',               // I: LOT (Leg of Training)
+                        mentee.typ || '',               // J: TYP (Type of School)
+                        mentee.loc || '',               // K: LOC (Location)
+                        mentee.yr || '',                // L: YR (Year)
+                        mentee.notes || '',             // M: NOTES
+                        mentee.address || '',           // N: ADDRESS
                         mentee.lastContact || '',
                         JSON.stringify(mentee.interactions || []),
                         mentee.createdAt || new Date().toISOString(),
@@ -1475,21 +1475,22 @@
                 
                 return dataRows.map((row, index) => {
                     // Map columns based on your actual spreadsheet structure:
-                    // A=NAME, B=MOBILE, C=EMAIL, D=FU, E=QS, F=POC, G=MF, H=LOT, I=TYP, J=LOC, K=YR, L=NOTES, M=ADDRESS
+                    // A=ID, B=NAME, C=MOBILE, D=EMAIL, E=FU, F=QS, G=POC, H=MF, I=LOT, J=TYP, K=LOC, L=YR, M=NOTES, N=ADDRESS
                     const mentee = {
-                        name: row[0] || `Imported Mentee ${index + 1}`,           // A: NAME
-                        mobile: row[1] || '',                                      // B: MOBILE
-                        email: row[2] || '',                                       // C: EMAIL
-                        fu: row[3] || '14',                                        // D: FU (default 14 days)
-                        qs: row[4] || '',                                          // E: QS
-                        poc: row[5] || '',                                         // F: POC
-                        mf: row[6] || '',                                          // G: MF
-                        lot: row[7] || '',                                         // H: LOT
-                        typ: row[8] || '',                                         // I: TYP
-                        loc: row[9] || '',                                         // J: LOC
-                        yr: row[10] || '',                                         // K: YR
-                        notes: row[11] || '',                                      // L: NOTES
-                        address: row[12] || '',                                    // M: ADDRESS
+                        id: row[0] || this.generateId(),                          // A: ID (generate if blank)
+                        name: row[1] || `Imported Mentee ${index + 1}`,           // B: NAME
+                        mobile: row[2] || '',                                      // C: MOBILE
+                        email: row[3] || '',                                       // D: EMAIL
+                        fu: row[4] || '14',                                        // E: FU (default 14 days)
+                        qs: row[5] || '',                                          // F: QS
+                        poc: row[6] || '',                                         // G: POC
+                        mf: row[7] || '',                                          // H: MF
+                        lot: row[8] || '',                                         // I: LOT
+                        typ: row[9] || '',                                         // J: TYP
+                        loc: row[10] || '',                                        // K: LOC
+                        yr: row[11] || '',                                         // L: YR
+                        notes: row[12] || '',                                      // M: NOTES
+                        address: row[13] || '',                                    // N: ADDRESS
                         lastContact: null,
                         interactions: []
                     };
