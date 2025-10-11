@@ -897,7 +897,7 @@
                 this.sheetId = sheetId;
                 this.auth = new GoogleAuth(clientId);
                 this.baseUrl = 'https://sheets.googleapis.com/v4/spreadsheets';
-                this.range = 'A:M'; // Use default sheet (no sheet name needed)
+                this.range = 'A:R'; // A-R for all 18 columns including metadata
             }
 
             async getSheetData() {
