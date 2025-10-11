@@ -694,7 +694,7 @@
                 <div style="margin: 1rem 0;">
                     <label style="display: flex; align-items: center; margin-bottom: 0.5rem;">
                         <input type="radio" name="importType" value="fromExistingSheet" checked style="margin-right: 0.5rem;">
-                        Import from existing Google Sheet (your current sheet)
+                        Import from your Quad Squad spreadsheet (100 mentees)
                     </label>
                     <label style="display: flex; align-items: center;">
                         <input type="radio" name="importType" value="fromNewSheet" style="margin-right: 0.5rem;">
@@ -739,7 +739,7 @@
         // 2. Create a new blank spreadsheet
         // 3. Make it public: Share → Anyone with link can edit
         // 4. Copy the Sheet ID from URL: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit
-        const GOOGLE_SHEET_ID = '1ztKS86TWP83qWftXJODbRZrFtpVis5IvIAS31TR1K4M';
+        const GOOGLE_SHEET_ID = '11HX9mRyI_sQIPnQdao2BcUuDYvqh9wLtVAFQjOmxtJo';
         
         // STEP 2: Get Google OAuth2 Client ID
         // 1. Go to https://console.cloud.google.com/
@@ -1473,21 +1473,22 @@
                 const dataRows = sourceData.length > 1 ? sourceData.slice(1) : sourceData;
                 
                 return dataRows.map((row, index) => {
-                    // Flexible parsing - try to map common column patterns
+                    // Map columns based on your actual spreadsheet structure:
+                    // A=NAME, B=MOBILE, C=EMAIL, D=FU, E=QS, F=POC, G=MF, H=LOT, I=TYP, J=LOC, K=YR, L=NOTES, M=ADDRESS
                     const mentee = {
-                        name: row[0] || row[1] || `Imported Mentee ${index + 1}`,
-                        specialty: row[2] || row[3] || 'General',
-                        phone: row[3] || row[4] || '',
-                        email: row[4] || row[5] || '',
-                        year: row[5] || row[6] || '',
-                        institution: row[6] || row[7] || '',
-                        gender: row[7] || row[8] || '',
-                        school: row[8] || row[9] || '',
-                        schoolType: row[9] || row[10] || '',
-                        schoolYear: row[10] || row[11] || '',
-                        address: row[11] || row[12] || '',
-                        referredBy: row[12] || row[13] || '',
-                        notes: row[13] || row[14] || '',
+                        name: row[0] || `Imported Mentee ${index + 1}`,           // A: NAME
+                        mobile: row[1] || '',                                      // B: MOBILE
+                        email: row[2] || '',                                       // C: EMAIL
+                        fu: row[3] || '14',                                        // D: FU (default 14 days)
+                        qs: row[4] || '',                                          // E: QS
+                        poc: row[5] || '',                                         // F: POC
+                        mf: row[6] || '',                                          // G: MF
+                        lot: row[7] || '',                                         // H: LOT
+                        typ: row[8] || '',                                         // I: TYP
+                        loc: row[9] || '',                                         // J: LOC
+                        yr: row[10] || '',                                         // K: YR
+                        notes: row[11] || '',                                      // L: NOTES
+                        address: row[12] || '',                                    // M: ADDRESS
                         lastContact: null,
                         interactions: []
                     };
