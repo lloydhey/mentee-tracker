@@ -1216,19 +1216,26 @@
                 return weeklyCount;
             }
 
-            async logInteraction(menteeId, type) {
+            async logInteraction(menteeId, type, notes = '') {
                 const mentee = this.mentees.find(m => m.id === menteeId);
                 if (!mentee) return;
 
                 // Confirm the interaction
-                const actionName = type === 'text' ? 'text' : 'call';
+                const actionNames = {
+                    'text': 'text',
+                    'call': 'call',
+                    'email': 'email',
+                    'ftf': 'face-to-face meeting'
+                };
+                const actionName = actionNames[type] || type;
                 if (!confirm(`Log ${actionName} with ${mentee.name}?`)) {
                     return;
                 }
 
                 const interaction = {
                     type,
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
+                    notes: notes || ''
                 };
 
                 const interactions = mentee.interactions || [];
@@ -1243,12 +1250,39 @@
                 this.render();
                 
                 // Show success toast
-                const actionNames = {
+                const toastNames = {
                     'text': '📱 Text',
                     'call': '📞 Call',
-                    'email': '📧 Email'
+                    'email': '📧 Email',
+                    'ftf': '🤝 Face-to-Face'
                 };
-                this.showToast(`${actionNames[type] || type} logged successfully!`, 'success');
+                const toastMessage = notes ? `${toastNames[type] || type} (${notes}) logged successfully!` : `${toastNames[type] || type} logged successfully!`;
+                this.showToast(toastMessage, 'success');
+            }
+
+            async logFaceToFace(menteeId) {
+                const mentee = this.mentees.find(m => m.id === menteeId);
+                if (!mentee) return;
+
+                // Prompt for FTF type
+                const ftfType = prompt(
+                    `Face-to-Face meeting with ${mentee.name}\n\n` +
+                    `Enter type:\n` +
+                    `  SC - Shadowing Clinic\n` +
+                    `  SO - Shadowing OR\n` +
+                    `  QS - Quad Squad\n` +
+                    `  OP - Outpost\n` +
+                    `  CO - Coffee\n` +
+                    `  ME - Meal\n` +
+                    `  Or enter custom description:`,
+                    'SC'
+                );
+
+                if (ftfType === null || ftfType.trim() === '') {
+                    return; // User cancelled
+                }
+
+                await this.logInteraction(menteeId, 'ftf', ftfType.trim());
             }
 
             initiateContact(menteeId, type) {
@@ -1257,7 +1291,8 @@
 
                 if (type === 'email') {
                     if (!mentee.email) return;
-                    window.location.href = `mailto:${mentee.email}`;
+                    // Use Gmail compose instead of mailto
+                    window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(mentee.email)}`, '_blank');
                 } else if (type === 'text') {
                     if (!mentee.mobile) return;
                     const cleanPhone = mentee.mobile.replace(/\D/g, '');
@@ -1647,6 +1682,9 @@
                                         📧 Log Email
                                     </button>
                                 `}
+                                <button class="btn-primary btn-small" onclick="app.logFaceToFace('${mentee.id}')">
+                                    🤝 Face-to-Face
+                                </button>
                                 <button class="btn-secondary btn-small" onclick="app.showEditNotesModal('${mentee.id}')">
                                     📝 Notes
                                 </button>
@@ -1664,12 +1702,18 @@
                             ${recentInteractions.length > 0 ? `
                                 <div class="mentee-history">
                                     <div class="history-title">Recent Interactions</div>
-                                    ${recentInteractions.map(interaction => `
-                                        <div class="history-item">
-                                            <span class="history-icon">${interaction.type === 'text' ? '📱' : interaction.type === 'call' ? '📞' : '📧'}</span>
-                                            ${this.formatDate(interaction.timestamp)}
-                                        </div>
-                                    `).join('')}
+                                    ${recentInteractions.map(interaction => {
+                                        const icon = interaction.type === 'text' ? '📱' : 
+                                                    interaction.type === 'call' ? '📞' : 
+                                                    interaction.type === 'ftf' ? '🤝' : '📧';
+                                        const noteText = interaction.notes ? ` (${interaction.notes})` : '';
+                                        return `
+                                            <div class="history-item">
+                                                <span class="history-icon">${icon}</span>
+                                                ${this.formatDate(interaction.timestamp)}${noteText}
+                                            </div>
+                                        `;
+                                    }).join('')}
                                 </div>
                             ` : ''}
                         </div>
