@@ -1026,6 +1026,7 @@
                 this.currentEditingMenteeId = null;
                 this.searchTerm = '';
                 this.isAuthenticated = false;
+                console.log('MenteeTrackerApp constructor: isAuthenticated set to false');
             }
 
             async authenticateApp() {
@@ -1710,7 +1711,9 @@
         }
 
         // Initialize app
+        console.log('Starting app initialization...');
         const app = new MenteeTrackerApp();
+        console.log('App created, calling init...');
         app.init();
     </script>
 </body>
