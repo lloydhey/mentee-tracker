@@ -1306,11 +1306,7 @@
             }
 
             showAddMenteeModal() {
-                console.log('showAddMenteeModal called');
                 try {
-                    const modal = document.getElementById('addMenteeModal');
-                    console.log('Modal element:', modal);
-                    
                     document.getElementById('menteeName').value = '';
                     document.getElementById('menteeMobile').value = '';
                     document.getElementById('menteeEmail').value = '';
@@ -1324,57 +1320,66 @@
                     document.getElementById('menteeYr').value = '';
                     document.getElementById('menteeNotes').value = '';
                     document.getElementById('menteeAddress').value = '';
-                    
-                    modal.classList.add('active');
-                    console.log('Modal classes:', modal.className);
                 } catch (error) {
-                    console.error('Error in showAddMenteeModal:', error);
+                    console.error('Error clearing form fields:', error);
                 }
+                document.getElementById('addMenteeModal').classList.add('active');
             }
 
             async addMentee() {
-                const name = document.getElementById('menteeName').value.trim();
-                const mobile = document.getElementById('menteeMobile').value.trim();
-                const email = document.getElementById('menteeEmail').value.trim();
-                const fu = document.getElementById('menteeFu').value.trim();
-                const qs = document.getElementById('menteeQs').value.trim();
-                const poc = document.getElementById('menteePoc').value;
-                const mf = document.getElementById('menteeMf').value;
-                const lot = document.getElementById('menteeLot').value;
-                const typ = document.getElementById('menteeTyp').value.trim();
-                const loc = document.getElementById('menteeLoc').value.trim();
-                const yr = document.getElementById('menteeYr').value.trim();
-                const notes = document.getElementById('menteeNotes').value.trim();
-                const address = document.getElementById('menteeAddress').value.trim();
+                console.log('addMentee called');
+                try {
+                    const name = document.getElementById('menteeName').value.trim();
+                    const mobile = document.getElementById('menteeMobile').value.trim();
+                    const email = document.getElementById('menteeEmail').value.trim();
+                    const fu = document.getElementById('menteeFu').value.trim();
+                    const qs = document.getElementById('menteeQs').value.trim();
+                    const poc = document.getElementById('menteePoc').value;
+                    const mf = document.getElementById('menteeMf').value;
+                    const lot = document.getElementById('menteeLot').value;
+                    const typ = document.getElementById('menteeTyp').value.trim();
+                    const loc = document.getElementById('menteeLoc').value.trim();
+                    const yr = document.getElementById('menteeYr').value.trim();
+                    const notes = document.getElementById('menteeNotes').value.trim();
+                    const address = document.getElementById('menteeAddress').value.trim();
 
-                if (!name || !mobile || !email || !fu) {
-                    alert('Please fill in all required fields (Name, Mobile, Email, Follow-up Days)');
-                    return;
+                    if (!name || !mobile || !email || !fu) {
+                        alert('Please fill in all required fields (Name, Mobile, Email, Follow-up Days)');
+                        return;
+                    }
+
+                    const newMentee = {
+                        name,
+                        mobile,
+                        email,
+                        fu: parseInt(fu) || 30,
+                        qs: qs || '',
+                        poc: poc || '',
+                        mf: mf || '',
+                        lot: lot || '',
+                        typ: typ || '',
+                        loc: loc || '',
+                        yr: yr || '',
+                        notes: notes || '',
+                        address: address || '',
+                        lastContact: null,
+                        interactions: []
+                    };
+
+                    console.log('Saving mentee:', newMentee);
+                    await this.storage.addMentee(newMentee);
+                    console.log('Mentee saved, loading mentees...');
+                    await this.loadMentees();
+                    console.log('Closing modal...');
+                    this.closeModal('addMenteeModal');
+                    console.log('Rendering...');
+                    this.render();
+                    this.showToast(`${name} added successfully!`, 'success');
+                    console.log('addMentee completed');
+                } catch (error) {
+                    console.error('Error adding mentee:', error);
+                    alert(`Error adding mentee: ${error.message}`);
                 }
-
-                const newMentee = {
-                    name,
-                    mobile,
-                    email,
-                    fu: parseInt(fu) || 30,
-                    qs: qs || '',
-                    poc: poc || '',
-                    mf: mf || '',
-                    lot: lot || '',
-                    typ: typ || '',
-                    loc: loc || '',
-                    yr: yr || '',
-                    notes: notes || '',
-                    address: address || '',
-                    lastContact: null,
-                    interactions: []
-                };
-
-                await this.storage.addMentee(newMentee);
-                await this.loadMentees();
-                this.closeModal('addMenteeModal');
-                this.render();
-                this.showToast(`${name} added successfully!`, 'success');
             }
 
             async deleteMentee(menteeId) {
