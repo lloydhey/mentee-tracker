@@ -1052,15 +1052,12 @@
             // Check if mentee needs follow-up (red alert)
             needsFollowUp(mentee) {
                 if (!mentee.fu || !mentee.lastContact) {
-                    console.log(`Mentee ${mentee.name}: No FU (${mentee.fu}) or lastContact (${mentee.lastContact})`);
                     return true; // Red if no follow-up days set or no last contact
                 }
                 
                 const lastContactDate = new Date(mentee.lastContact);
                 const daysSinceContact = Math.floor((new Date() - lastContactDate) / (1000 * 60 * 60 * 24));
                 const maxDays = parseInt(mentee.fu) || 30;
-                
-                console.log(`Mentee ${mentee.name}: lastContact=${mentee.lastContact}, daysSince=${daysSinceContact}, maxDays=${maxDays}, needsFollowUp=${daysSinceContact > maxDays}`);
                 
                 return daysSinceContact > maxDays;
             }
@@ -1166,7 +1163,12 @@
                 if (this.searchTerm) {
                     filtered = filtered.filter(m => 
                         m.name.toLowerCase().includes(this.searchTerm) ||
-                        m.specialty.toLowerCase().includes(this.searchTerm)
+                        m.mobile.toLowerCase().includes(this.searchTerm) ||
+                        m.email.toLowerCase().includes(this.searchTerm) ||
+                        m.qs.toLowerCase().includes(this.searchTerm) ||
+                        m.lot.toLowerCase().includes(this.searchTerm) ||
+                        m.loc.toLowerCase().includes(this.searchTerm) ||
+                        m.notes.toLowerCase().includes(this.searchTerm)
                     );
                 }
 
@@ -1180,7 +1182,7 @@
                 return filtered;
             }
 
-            getDaysAgo(date) {
+            getDaysAgo(date, fuDays = 14) {
                 if (!date) return { color: 'red', label: 'Never contacted', days: 999 };
                 
                 const now = new Date();
@@ -1188,8 +1190,8 @@
                 const diffTime = Math.abs(now - lastContact);
                 const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-                if (days >= 14) return { color: 'red', label: `${days} days ago`, days };
-                if (days >= 7) return { color: 'yellow', label: `${days} days ago`, days };
+                if (days >= fuDays) return { color: 'red', label: `${days} days ago`, days };
+                if (days >= Math.floor(fuDays / 2)) return { color: 'yellow', label: `${days} days ago`, days };
                 if (days === 0) return { color: 'green', label: 'Today', days };
                 if (days === 1) return { color: 'green', label: 'Yesterday', days };
                 return { color: 'green', label: `${days} days ago`, days };
@@ -1230,14 +1232,11 @@
                 const interactions = mentee.interactions || [];
                 interactions.unshift(interaction);
 
-                console.log(`Updating mentee ${mentee.name} with lastContact: ${interaction.timestamp}`);
-                
                 await this.storage.updateMentee(menteeId, {
                     lastContact: interaction.timestamp,
                     interactions
                 });
 
-                console.log(`Reloading mentees after interaction log`);
                 await this.loadMentees();
                 this.render();
                 
@@ -1559,8 +1558,8 @@
 
             renderStats() {
                 const needsContact = this.mentees.filter(m => {
-                    const info = this.getDaysAgo(m.lastContact);
-                    return info.days >= 7;
+                    const info = this.getDaysAgo(m.lastContact, parseInt(m.fu) || 14);
+                    return info.days >= Math.floor((parseInt(m.fu) || 14) / 2);
                 }).length;
 
                 document.getElementById('totalMentees').textContent = this.mentees.length;
@@ -1584,7 +1583,7 @@
 
                 container.innerHTML = filteredMentees.map(mentee => {
                     const needsFollowUp = this.needsFollowUp(mentee);
-                    const priorityInfo = this.getDaysAgo(mentee.lastContact);
+                    const priorityInfo = this.getDaysAgo(mentee.lastContact, parseInt(mentee.fu) || 14);
                     const recentInteractions = (mentee.interactions || []).slice(0, 5);
                     const priorityColor = needsFollowUp ? 'red' : priorityInfo.color;
 
