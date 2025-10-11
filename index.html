@@ -193,6 +193,16 @@
             background: var(--gray-300);
         }
 
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+        }
+
         .btn-small {
             padding: 0.5rem 0.75rem;
             font-size: 0.875rem;
@@ -736,6 +746,10 @@
         // 7. Copy the Client ID here
         const GOOGLE_CLIENT_ID = '48894897363-42h3nabi6v0b8kcistmisb87kup8tlq3.apps.googleusercontent.com';
         
+        // STEP 3: App Security Password
+        // Set a password to protect access to the app
+        const APP_PASSWORD = 'mentee2024!'; // Change this to your secure password
+        
         // ========================================
         // THAT'S IT! No OAuth, no login required!
         // ========================================
@@ -1011,10 +1025,68 @@
                 this.mentees = [];
                 this.currentEditingMenteeId = null;
                 this.searchTerm = '';
+                this.isAuthenticated = false;
+            }
+
+            async authenticateApp() {
+                return new Promise((resolve) => {
+                    // Create password modal
+                    const modal = document.createElement('div');
+                    modal.className = 'modal';
+                    modal.innerHTML = `
+                        <div class="modal-content">
+                            <h2>🔒 Access Required</h2>
+                            <p>Please enter the password to access the Mentee Tracker:</p>
+                            <input type="password" id="appPassword" placeholder="Enter password" autocomplete="current-password">
+                            <div class="modal-buttons">
+                                <button id="loginBtn" class="btn btn-primary">Login</button>
+                            </div>
+                            <div id="passwordError" class="error-message" style="display: none;">
+                                Incorrect password. Please try again.
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    
+                    const passwordInput = document.getElementById('appPassword');
+                    const loginBtn = document.getElementById('loginBtn');
+                    const errorDiv = document.getElementById('passwordError');
+                    
+                    const handleLogin = () => {
+                        const enteredPassword = passwordInput.value;
+                        if (enteredPassword === APP_PASSWORD) {
+                            this.isAuthenticated = true;
+                            document.body.removeChild(modal);
+                            this.init(); // Restart initialization
+                            resolve();
+                        } else {
+                            errorDiv.style.display = 'block';
+                            passwordInput.value = '';
+                            passwordInput.focus();
+                        }
+                    };
+                    
+                    loginBtn.addEventListener('click', handleLogin);
+                    passwordInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            handleLogin();
+                        }
+                    });
+                    
+                    // Focus on password input
+                    setTimeout(() => passwordInput.focus(), 100);
+                });
             }
 
             async init() {
                 try {
+                    // Check app password first
+                    if (!this.isAuthenticated) {
+                        await this.authenticateApp();
+                        return;
+                    }
+                    
                     this.updateConnectionStatus('loading', 'Loading Google APIs...');
                     
                     // Wait for Google APIs to load
