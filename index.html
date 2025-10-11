@@ -897,7 +897,7 @@
                 this.sheetId = sheetId;
                 this.auth = new GoogleAuth(clientId);
                 this.baseUrl = 'https://sheets.googleapis.com/v4/spreadsheets';
-                this.range = 'Sheet1!A:M'; // Updated to match your actual data range
+                this.range = 'A:M'; // Use default sheet (no sheet name needed)
             }
 
             async getSheetData() {
@@ -1073,7 +1073,7 @@
                     // Test sheet access first with a simple range
                     try {
                         console.log('Testing sheet access with range A1:A1...');
-                        const testUrl = `https://sheets.googleapis.com/v4/spreadsheets/${this.storage.sheetId}/values/Sheet1!A1:A1`;
+                        const testUrl = `https://sheets.googleapis.com/v4/spreadsheets/${this.storage.sheetId}/values/A1:A1`;
                         const testData = await this.storage.auth.makeAuthenticatedRequest(testUrl);
                         console.log('Basic sheet access test successful:', testData);
                         
