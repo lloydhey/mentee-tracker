@@ -1306,19 +1306,23 @@
             }
 
             showAddMenteeModal() {
-                document.getElementById('menteeName').value = '';
-                document.getElementById('menteeMobile').value = '';
-                document.getElementById('menteeEmail').value = '';
-                document.getElementById('menteeFu').value = '14';
-                document.getElementById('menteeQs').value = '';
-                document.getElementById('menteePoc').value = '';
-                document.getElementById('menteeMf').value = '';
-                document.getElementById('menteeLot').value = '';
-                document.getElementById('menteeTyp').value = '';
-                document.getElementById('menteeLoc').value = '';
-                document.getElementById('menteeYr').value = '';
-                document.getElementById('menteeNotes').value = '';
-                document.getElementById('menteeAddress').value = '';
+                try {
+                    document.getElementById('menteeName').value = '';
+                    document.getElementById('menteeMobile').value = '';
+                    document.getElementById('menteeEmail').value = '';
+                    document.getElementById('menteeFu').value = '14';
+                    document.getElementById('menteeQs').value = '';
+                    document.getElementById('menteePoc').value = '';
+                    document.getElementById('menteeMf').value = '';
+                    document.getElementById('menteeLot').value = '';
+                    document.getElementById('menteeTyp').value = '';
+                    document.getElementById('menteeLoc').value = '';
+                    document.getElementById('menteeYr').value = '';
+                    document.getElementById('menteeNotes').value = '';
+                    document.getElementById('menteeAddress').value = '';
+                } catch (error) {
+                    console.error('Error clearing form fields:', error);
+                }
                 document.getElementById('addMenteeModal').classList.add('active');
             }
 
