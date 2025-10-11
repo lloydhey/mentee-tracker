@@ -1306,7 +1306,11 @@
             }
 
             showAddMenteeModal() {
+                console.log('showAddMenteeModal called');
                 try {
+                    const modal = document.getElementById('addMenteeModal');
+                    console.log('Modal element:', modal);
+                    
                     document.getElementById('menteeName').value = '';
                     document.getElementById('menteeMobile').value = '';
                     document.getElementById('menteeEmail').value = '';
@@ -1320,10 +1324,12 @@
                     document.getElementById('menteeYr').value = '';
                     document.getElementById('menteeNotes').value = '';
                     document.getElementById('menteeAddress').value = '';
+                    
+                    modal.classList.add('active');
+                    console.log('Modal classes:', modal.className);
                 } catch (error) {
-                    console.error('Error clearing form fields:', error);
+                    console.error('Error in showAddMenteeModal:', error);
                 }
-                document.getElementById('addMenteeModal').classList.add('active');
             }
 
             async addMentee() {
