@@ -1052,12 +1052,15 @@
             // Check if mentee needs follow-up (red alert)
             needsFollowUp(mentee) {
                 if (!mentee.fu || !mentee.lastContact) {
+                    console.log(`Mentee ${mentee.name}: No FU (${mentee.fu}) or lastContact (${mentee.lastContact})`);
                     return true; // Red if no follow-up days set or no last contact
                 }
                 
                 const lastContactDate = new Date(mentee.lastContact);
                 const daysSinceContact = Math.floor((new Date() - lastContactDate) / (1000 * 60 * 60 * 24));
                 const maxDays = parseInt(mentee.fu) || 30;
+                
+                console.log(`Mentee ${mentee.name}: lastContact=${mentee.lastContact}, daysSince=${daysSinceContact}, maxDays=${maxDays}, needsFollowUp=${daysSinceContact > maxDays}`);
                 
                 return daysSinceContact > maxDays;
             }
@@ -1227,11 +1230,14 @@
                 const interactions = mentee.interactions || [];
                 interactions.unshift(interaction);
 
+                console.log(`Updating mentee ${mentee.name} with lastContact: ${interaction.timestamp}`);
+                
                 await this.storage.updateMentee(menteeId, {
                     lastContact: interaction.timestamp,
                     interactions
                 });
 
+                console.log(`Reloading mentees after interaction log`);
                 await this.loadMentees();
                 this.render();
                 
