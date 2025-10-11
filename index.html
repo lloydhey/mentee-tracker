@@ -897,7 +897,7 @@
                 this.sheetId = sheetId;
                 this.auth = new GoogleAuth(clientId);
                 this.baseUrl = 'https://sheets.googleapis.com/v4/spreadsheets';
-                this.range = 'Sheet1!A:S';
+                this.range = 'Sheet1!A:M'; // Updated to match your actual data range
             }
 
             async getSheetData() {
@@ -1070,10 +1070,16 @@
                     
                     this.updateConnectionStatus('loading', 'Testing sheet access...');
                     
-                    // Test sheet access first
+                    // Test sheet access first with a simple range
                     try {
+                        console.log('Testing sheet access with range A1:A1...');
+                        const testUrl = `https://sheets.googleapis.com/v4/spreadsheets/${this.storage.sheetId}/values/Sheet1!A1:A1`;
+                        const testData = await this.storage.auth.makeAuthenticatedRequest(testUrl);
+                        console.log('Basic sheet access test successful:', testData);
+                        
+                        // Now try the full range
                         await this.storage.getSheetData();
-                        console.log('Sheet access test successful');
+                        console.log('Full sheet access test successful');
                     } catch (error) {
                         console.error('Sheet access test failed:', error);
                         this.updateConnectionStatus('error', `Cannot access sheet: ${error.message}`);
