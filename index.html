@@ -609,66 +609,71 @@
                 <button class="close-btn" onclick="app.closeModal('addMenteeModal')">&times;</button>
             </div>
             <div class="form-group">
-                <label for="menteeName">Name</label>
-                <input type="text" id="menteeName" placeholder="Enter mentee's name">
+                <label for="menteeName">Name *</label>
+                <input type="text" id="menteeName" placeholder="Enter mentee's name" required>
             </div>
             <div class="form-group">
-                <label for="menteeSpecialty">Specialty</label>
-                <input type="text" id="menteeSpecialty" placeholder="e.g. Cardiology, Internal Medicine">
+                <label for="menteeMobile">Mobile *</label>
+                <input type="tel" id="menteeMobile" placeholder="e.g. (555) 123-4567" required>
             </div>
             <div class="form-group">
-                <label for="menteePhone">Phone Number (Optional)</label>
-                <input type="tel" id="menteePhone" placeholder="e.g. (555) 123-4567">
+                <label for="menteeEmail">Email *</label>
+                <input type="email" id="menteeEmail" placeholder="e.g. mentee@example.com" required>
             </div>
             <div class="form-group">
-                <label for="menteeEmail">Email Address (Optional)</label>
-                <input type="email" id="menteeEmail" placeholder="e.g. mentee@example.com">
+                <label for="menteeFu">Follow-up Days (FU) *</label>
+                <input type="number" id="menteeFu" placeholder="e.g. 30" min="1" required>
+                <small>Maximum days between follow-ups before alert</small>
             </div>
             <div class="form-group">
-                <label for="menteeYear">Year/Level (Optional)</label>
-                <input type="text" id="menteeYear" placeholder="e.g. 3rd Year, PGY-2, Junior">
+                <label for="menteeQs">Quad Squad (QS)</label>
+                <input type="text" id="menteeQs" placeholder="e.g. A, B, C, etc.">
             </div>
             <div class="form-group">
-                <label for="menteeInstitution">Institution (Optional)</label>
-                <input type="text" id="menteeInstitution" placeholder="e.g. University Hospital, Medical School">
+                <label for="menteePoc">Point of Contact (POC)</label>
+                <select id="menteePoc">
+                    <option value="">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
             </div>
             <div class="form-group">
-                <label for="menteeGender">Gender (Optional)</label>
-                <select id="menteeGender">
-                    <option value="">Select Gender</option>
+                <label for="menteeMf">Male/Female (MF)</label>
+                <select id="menteeMf">
+                    <option value="">Select</option>
                     <option value="M">Male</option>
                     <option value="F">Female</option>
-                    <option value="Other">Other</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="menteeSchool">School (Optional)</label>
-                <input type="text" id="menteeSchool" placeholder="e.g. Harvard Medical School, Stanford University">
-            </div>
-            <div class="form-group">
-                <label for="menteeSchoolType">School Type (Optional)</label>
-                <select id="menteeSchoolType">
-                    <option value="">Select School Type</option>
+                <label for="menteeLot">Leg of Training (LOT)</label>
+                <select id="menteeLot">
+                    <option value="">Select</option>
                     <option value="HS">High School</option>
-                    <option value="College">College/Undergraduate</option>
-                    <option value="Grad">Graduate School</option>
-                    <option value="Resident">Resident</option>
-                    <option value="Fellow">Fellow</option>
-                    <option value="Other">Other</option>
+                    <option value="UG">Undergrad</option>
+                    <option value="G">Grad School</option>
+                    <option value="RF">Resident/Fellow</option>
+                    <option value="W">Working/Graduate</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="menteeSchoolYear">School Year (Optional)</label>
-                <input type="text" id="menteeSchoolYear" placeholder="e.g. 1st Year, 2nd Year, PGY-1, etc.">
+                <label for="menteeTyp">Type of School (TYP)</label>
+                <input type="text" id="menteeTyp" placeholder="e.g. M (Medical), DEN (Dental), etc.">
             </div>
             <div class="form-group">
-                <label for="menteeAddress">Address (Optional)</label>
-                <textarea id="menteeAddress" placeholder="Enter full address" rows="2"></textarea>
+                <label for="menteeLoc">Location (LOC)</label>
+                <input type="text" id="menteeLoc" placeholder="College/Grad School Name, Hospital Name">
             </div>
             <div class="form-group">
-                <label for="menteeReferredBy">Referred By / Friends With (Optional)</label>
-                <input type="text" id="menteeReferredBy" placeholder="e.g. Dr. Smith, John Doe, LinkedIn, etc.">
+                <label for="menteeYr">Year (YR)</label>
+                <input type="text" id="menteeYr" placeholder="Year in program or practice">
+            </div>
+            <div class="form-group">
+                <label for="menteeNotes">Notes</label>
+                <textarea id="menteeNotes" placeholder="Additional notes" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="menteeAddress">Address</label>
+                <textarea id="menteeAddress" placeholder="Home address" rows="2"></textarea>
             </div>
             <div class="modal-actions">
                 <button class="btn-secondary" onclick="app.closeModal('addMenteeModal')">Cancel</button>
@@ -915,19 +920,19 @@
                     
                     return dataRows.map(row => ({
                         id: row[0] || '',
-                        name: row[1] || '',
-                        specialty: row[2] || '',
-                        phone: row[3] || '',
-                        email: row[4] || '',
-                        year: row[5] || '',
-                        institution: row[6] || '',
-                        gender: row[7] || '',
-                        school: row[8] || '',
-                        schoolType: row[9] || '',
-                        schoolYear: row[10] || '',
-                        address: row[11] || '',
-                        referredBy: row[12] || '',
-                        notes: row[13] || '',
+                        name: row[1] || '',           // NAME
+                        mobile: row[2] || '',         // MOBILE
+                        email: row[3] || '',          // EMAIL
+                        fu: row[4] || '',             // FU (follow-up days)
+                        qs: row[5] || '',             // QS (Quad Squad)
+                        poc: row[6] || '',            // POC (Point of Contact)
+                        mf: row[7] || '',             // MF (Male/Female)
+                        lot: row[8] || '',            // LOT (Leg of Training)
+                        typ: row[9] || '',            // TYP (Type of School)
+                        loc: row[10] || '',           // LOC (Location)
+                        yr: row[11] || '',            // YR (Year)
+                        notes: row[12] || '',         // NOTES
+                        address: row[13] || '',       // ADDRESS
                         lastContact: row[14] || null,
                         interactions: row[15] ? JSON.parse(row[15]) : [],
                         createdAt: row[16] || new Date().toISOString(),
@@ -942,24 +947,24 @@
             async saveMentees(mentees) {
                 try {
                     // Create header row
-                    const headerRow = ['id', 'name', 'specialty', 'phone', 'email', 'year', 'institution', 'gender', 'school', 'schoolType', 'schoolYear', 'address', 'referredBy', 'notes', 'lastContact', 'interactions', 'createdAt', 'updatedAt'];
+                    const headerRow = ['id', 'name', 'mobile', 'email', 'fu', 'qs', 'poc', 'mf', 'lot', 'typ', 'loc', 'yr', 'notes', 'address', 'lastContact', 'interactions', 'createdAt', 'updatedAt'];
                     
                     // Convert mentees to rows
                     const dataRows = mentees.map(mentee => [
                         mentee.id || '',
-                        mentee.name || '',
-                        mentee.specialty || '',
-                        mentee.phone || '',
-                        mentee.email || '',
-                        mentee.year || '',
-                        mentee.institution || '',
-                        mentee.gender || '',
-                        mentee.school || '',
-                        mentee.schoolType || '',
-                        mentee.schoolYear || '',
-                        mentee.address || '',
-                        mentee.referredBy || '',
-                        mentee.notes || '',
+                        mentee.name || '',           // NAME
+                        mentee.mobile || '',         // MOBILE
+                        mentee.email || '',          // EMAIL
+                        mentee.fu || '',             // FU (follow-up days)
+                        mentee.qs || '',             // QS (Quad Squad)
+                        mentee.poc || '',            // POC (Point of Contact)
+                        mentee.mf || '',             // MF (Male/Female)
+                        mentee.lot || '',            // LOT (Leg of Training)
+                        mentee.typ || '',            // TYP (Type of School)
+                        mentee.loc || '',            // LOC (Location)
+                        mentee.yr || '',             // YR (Year)
+                        mentee.notes || '',          // NOTES
+                        mentee.address || '',        // ADDRESS
                         mentee.lastContact || '',
                         JSON.stringify(mentee.interactions || []),
                         mentee.createdAt || new Date().toISOString(),
@@ -1021,6 +1026,19 @@
                 this.mentees = [];
                 this.currentEditingMenteeId = null;
                 this.searchTerm = '';
+            }
+
+            // Check if mentee needs follow-up (red alert)
+            needsFollowUp(mentee) {
+                if (!mentee.fu || !mentee.lastContact) {
+                    return true; // Red if no follow-up days set or no last contact
+                }
+                
+                const lastContactDate = new Date(mentee.lastContact);
+                const daysSinceContact = Math.floor((new Date() - lastContactDate) / (1000 * 60 * 60 * 24));
+                const maxDays = parseInt(mentee.fu) || 30;
+                
+                return daysSinceContact > maxDays;
             }
 
 
@@ -1226,12 +1244,12 @@
                     if (!mentee.email) return;
                     window.location.href = `mailto:${mentee.email}`;
                 } else if (type === 'text') {
-                    if (!mentee.phone) return;
-                    const cleanPhone = mentee.phone.replace(/\D/g, '');
+                    if (!mentee.mobile) return;
+                    const cleanPhone = mentee.mobile.replace(/\D/g, '');
                     window.location.href = `sms:${cleanPhone}`;
                 } else if (type === 'call') {
-                    if (!mentee.phone) return;
-                    const cleanPhone = mentee.phone.replace(/\D/g, '');
+                    if (!mentee.mobile) return;
+                    const cleanPhone = mentee.mobile.replace(/\D/g, '');
                     window.location.href = `tel:${cleanPhone}`;
                 }
 
@@ -1290,38 +1308,39 @@
 
             async addMentee() {
                 const name = document.getElementById('menteeName').value.trim();
-                const specialty = document.getElementById('menteeSpecialty').value.trim();
-                const phone = document.getElementById('menteePhone').value.trim();
+                const mobile = document.getElementById('menteeMobile').value.trim();
                 const email = document.getElementById('menteeEmail').value.trim();
-                const year = document.getElementById('menteeYear').value.trim();
-                const institution = document.getElementById('menteeInstitution').value.trim();
-                const gender = document.getElementById('menteeGender').value;
-                const school = document.getElementById('menteeSchool').value.trim();
-                const schoolType = document.getElementById('menteeSchoolType').value;
-                const schoolYear = document.getElementById('menteeSchoolYear').value.trim();
+                const fu = document.getElementById('menteeFu').value.trim();
+                const qs = document.getElementById('menteeQs').value.trim();
+                const poc = document.getElementById('menteePoc').value;
+                const mf = document.getElementById('menteeMf').value;
+                const lot = document.getElementById('menteeLot').value;
+                const typ = document.getElementById('menteeTyp').value.trim();
+                const loc = document.getElementById('menteeLoc').value.trim();
+                const yr = document.getElementById('menteeYr').value.trim();
+                const notes = document.getElementById('menteeNotes').value.trim();
                 const address = document.getElementById('menteeAddress').value.trim();
-                const referredBy = document.getElementById('menteeReferredBy').value.trim();
 
-                if (!name) {
-                    alert('Please enter a name');
+                if (!name || !mobile || !email || !fu) {
+                    alert('Please fill in all required fields (Name, Mobile, Email, Follow-up Days)');
                     return;
                 }
 
                 const newMentee = {
                     name,
-                    specialty: specialty || 'General',
-                    phone: phone || '',
-                    email: email || '',
-                    year: year || '',
-                    institution: institution || '',
-                    gender: gender || '',
-                    school: school || '',
-                    schoolType: schoolType || '',
-                    schoolYear: schoolYear || '',
+                    mobile,
+                    email,
+                    fu: parseInt(fu) || 30,
+                    qs: qs || '',
+                    poc: poc || '',
+                    mf: mf || '',
+                    lot: lot || '',
+                    typ: typ || '',
+                    loc: loc || '',
+                    yr: yr || '',
+                    notes: notes || '',
                     address: address || '',
-                    referredBy: referredBy || '',
                     lastContact: null,
-                    notes: '',
                     interactions: []
                 };
 
@@ -1548,26 +1567,30 @@
                 }
 
                 container.innerHTML = filteredMentees.map(mentee => {
+                    const needsFollowUp = this.needsFollowUp(mentee);
                     const priorityInfo = this.getDaysAgo(mentee.lastContact);
                     const recentInteractions = (mentee.interactions || []).slice(0, 5);
+                    const priorityColor = needsFollowUp ? 'red' : priorityInfo.color;
 
                     return `
-                        <div class="mentee-card priority-${priorityInfo.color}">
+                        <div class="mentee-card priority-${priorityColor}">
                             <div class="mentee-header">
                                 <div class="mentee-info">
                                     <h3>${this.escapeHtml(mentee.name)}</h3>
-                                    <div class="mentee-specialty">${this.escapeHtml(mentee.specialty)}</div>
-                                    ${mentee.schoolType && mentee.schoolYear ? `<div class="mentee-detail">${this.escapeHtml(mentee.schoolType)} - ${this.escapeHtml(mentee.schoolYear)}</div>` : ''}
-                                    ${mentee.school ? `<div class="mentee-detail">${this.escapeHtml(mentee.school)}</div>` : ''}
-                                    ${mentee.referredBy ? `<div class="mentee-detail">Referred by: ${this.escapeHtml(mentee.referredBy)}</div>` : ''}
+                                    <div class="mentee-detail">${this.escapeHtml(mentee.mobile)} | ${this.escapeHtml(mentee.email)}</div>
+                                    ${mentee.lot ? `<div class="mentee-detail">${this.escapeHtml(mentee.lot)} - ${this.escapeHtml(mentee.yr || '')}</div>` : ''}
+                                    ${mentee.typ ? `<div class="mentee-detail">${this.escapeHtml(mentee.typ)}</div>` : ''}
+                                    ${mentee.loc ? `<div class="mentee-detail">${this.escapeHtml(mentee.loc)}</div>` : ''}
+                                    ${mentee.qs ? `<div class="mentee-detail">QS: ${this.escapeHtml(mentee.qs)}</div>` : ''}
+                                    ${mentee.poc === 'Yes' ? `<div class="mentee-detail">📍 Point of Contact</div>` : ''}
                                 </div>
-                                <div class="priority-badge ${priorityInfo.color}">
-                                    ${priorityInfo.label}
+                                <div class="priority-badge ${priorityColor}">
+                                    ${needsFollowUp ? '🔴 NEEDS FOLLOW-UP' : priorityInfo.label}
                                 </div>
                             </div>
 
                             <div class="mentee-actions">
-                                ${mentee.phone ? `
+                                ${mentee.mobile ? `
                                     <button class="btn-text btn-small" onclick="app.initiateContact('${mentee.id}', 'text')">
                                         📱 Text
                                     </button>
