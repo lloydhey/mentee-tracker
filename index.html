@@ -932,26 +932,33 @@
                     // Skip header row if it exists
                     const dataRows = rows.length > 1 ? rows.slice(1) : rows;
                     
-                    return dataRows.map(row => ({
-                        id: row[0] || this.generateId(), // A: ID (generate if blank)
-                        name: row[1] || '',              // B: NAME
-                        mobile: row[2] || '',            // C: MOBILE
-                        email: row[3] || '',             // D: EMAIL
-                        fu: row[4] || '14',              // E: FU (follow-up days)
-                        qs: row[5] || '',                // F: QS (Quad Squad)
-                        poc: row[6] || '',               // G: POC (Point of Contact)
-                        mf: row[7] || '',                // H: MF (Male/Female)
-                        lot: row[8] || '',               // I: LOT (Leg of Training)
-                        typ: row[9] || '',               // J: TYP (Type of School)
-                        loc: row[10] || '',              // K: LOC (Location)
-                        yr: row[11] || '',               // L: YR (Year)
-                        notes: row[12] || '',            // M: NOTES
-                        address: row[13] || '',          // N: ADDRESS
-                        lastContact: row[14] || null,
-                        interactions: row[15] ? JSON.parse(row[15]) : [],
-                        createdAt: row[16] || new Date().toISOString(),
-                        updatedAt: row[17] || new Date().toISOString()
-                    }));
+                    return dataRows.map((row, index) => {
+                        // Debug: log the first few rows to see the actual data structure
+                        if (index < 3) {
+                            console.log(`Row ${index}:`, row);
+                        }
+                        
+                        return {
+                            id: row[0] || this.generateId(), // A: ID (generate if blank)
+                            name: row[1] || '',              // B: NAME
+                            mobile: row[2] || '',            // C: MOBILE
+                            email: row[3] || '',             // D: EMAIL
+                            fu: row[4] || '14',              // E: FU (follow-up days)
+                            qs: row[5] || '',                // F: QS (Quad Squad)
+                            poc: row[6] || '',               // G: POC (Point of Contact)
+                            mf: row[7] || '',                // H: MF (Male/Female)
+                            lot: row[8] || '',               // I: LOT (Leg of Training)
+                            typ: row[9] || '',               // J: TYP (Type of School)
+                            loc: row[10] || '',              // K: LOC (Location)
+                            yr: row[11] || '',               // L: YR (Year)
+                            notes: row[12] || '',            // M: NOTES
+                            address: row[13] || '',          // N: ADDRESS
+                            lastContact: row[14] || null,
+                            interactions: row[15] ? JSON.parse(row[15]) : [],
+                            createdAt: row[16] || new Date().toISOString(),
+                            updatedAt: row[17] || new Date().toISOString()
+                        };
+                    });
                 } catch (error) {
                     console.error('Error loading mentees from Google Sheets:', error);
                     return [];
