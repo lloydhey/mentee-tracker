@@ -1303,10 +1303,7 @@
                     window.location.href = `tel:${cleanPhone}`;
                 }
 
-                // Log the interaction after a short delay (to allow the action to trigger)
-                setTimeout(() => {
-                    this.logInteraction(menteeId, type);
-                }, 100);
+                // Don't automatically log - let user decide after they've sent the message
             }
 
             showToast(message, type = 'success') {
