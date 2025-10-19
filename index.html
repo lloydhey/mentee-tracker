@@ -113,6 +113,25 @@
             align-items: center;
         }
 
+        .stats-compact {
+            display: flex;
+            gap: 1rem;
+            margin-left: 1rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat-item span {
+            font-weight: 600;
+            color: #374151;
+        }
+
         .header-center {
             flex: 1;
             max-width: 500px;
@@ -647,6 +666,11 @@
                     <span></span>
                     <span></span>
                     <span></span>
+                </div>
+                <div class="stats-compact">
+                    <span class="stat-item">Total: <span id="totalMentees">0</span></span>
+                    <span class="stat-item">Need Contact: <span id="needsContact">0</span></span>
+                    <span class="stat-item">This Week: <span id="weeklyContacts">0</span></span>
                 </div>
             </div>
             <div class="header-center">
@@ -1818,7 +1842,19 @@ m 919-215-0170`;
             }
 
             render() {
+                this.renderStats();
                 this.renderMenteeList();
+            }
+
+            renderStats() {
+                const needsContact = this.mentees.filter(m => {
+                    const info = this.getDaysAgo(m.lastContact, parseInt(m.fu) || 14);
+                    return info.days >= Math.floor((parseInt(m.fu) || 14) / 2);
+                }).length;
+
+                document.getElementById('totalMentees').textContent = this.mentees.length;
+                document.getElementById('needsContact').textContent = needsContact;
+                document.getElementById('weeklyContacts').textContent = this.getWeeklyStats();
             }
 
 
