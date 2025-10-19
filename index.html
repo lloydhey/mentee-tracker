@@ -1277,7 +1277,9 @@ m 919-215-0170`;
             setupEventListeners() {
                 const searchInput = document.getElementById('searchInput');
                 if (searchInput) {
+                    console.log('Search input found, adding event listener');
                     searchInput.addEventListener('input', (e) => {
+                        console.log('Search input changed:', e.target.value);
                         this.searchTerm = e.target.value.toLowerCase();
                         this.render();
                     });
@@ -1320,6 +1322,7 @@ m 919-215-0170`;
                 let filtered = this.mentees;
 
                 if (this.searchTerm) {
+                    console.log('Searching for:', this.searchTerm);
                     filtered = filtered.filter(m => 
                         (m.name || '').toLowerCase().includes(this.searchTerm) ||
                         (m.mobile || '').toLowerCase().includes(this.searchTerm) ||
@@ -1331,14 +1334,11 @@ m 919-215-0170`;
                         (m.yr || '').toLowerCase().includes(this.searchTerm) ||
                         (m.notes || '').toLowerCase().includes(this.searchTerm)
                     );
+                    console.log('Filtered results:', filtered.length);
                 }
 
-                // Sort by last contact (oldest first)
-                filtered.sort((a, b) => {
-                    const dateA = a.lastContact ? new Date(a.lastContact) : new Date(0);
-                    const dateB = b.lastContact ? new Date(b.lastContact) : new Date(0);
-                    return dateA - dateB;
-                });
+                // Sort alphabetically by name
+                filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
                 return filtered;
             }
@@ -1591,9 +1591,12 @@ m 919-215-0170`;
             }
 
             toggleMenu() {
+                console.log('Toggle menu clicked');
                 const menu = document.getElementById('dropdownMenu');
                 if (menu) {
+                    console.log('Menu found, toggling show class');
                     menu.classList.toggle('show');
+                    console.log('Menu classes:', menu.className);
                 } else {
                     console.error('Dropdown menu not found');
                 }
