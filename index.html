@@ -435,10 +435,14 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .btn-photo:hover {
@@ -1995,7 +1999,9 @@ m 919-215-0170`;
                                     `<img src="${mentee.photo}" alt="${mentee.name}" class="profile-photo">` : 
                                     `<div class="photo-placeholder">📷</div>`
                                 }
-                                <button class="btn-photo" onclick="app.uploadPhoto('${mentee.id}')">📷 Add Photo</button>
+                                <button class="btn-photo" onclick="app.uploadPhoto('${mentee.id}')" title="Add Photo">
+                                    ${mentee.photo ? '📷' : '📷 Add Photo'}
+                                </button>
                             </div>
                         </div>
                         
@@ -2134,6 +2140,12 @@ m 919-215-0170`;
                 input.onchange = async (e) => {
                     const file = e.target.files[0];
                     if (file) {
+                        // Check file size (max 5MB)
+                        if (file.size > 5 * 1024 * 1024) {
+                            this.showToast('Photo too large. Please choose a file under 5MB.', 'error');
+                            return;
+                        }
+                        
                         const reader = new FileReader();
                         reader.onload = async (e) => {
                             const photoData = e.target.result;
