@@ -1392,6 +1392,13 @@ m 919-215-0170`;
                 } else {
                     this.initiateContactWithoutTemplate(menteeId, type);
                 }
+
+                // Ask if user wants to log the interaction after a delay
+                setTimeout(() => {
+                    if (confirm(`Did you send the ${type} to ${mentee.name}? Log this interaction?`)) {
+                        this.logInteraction(menteeId, type);
+                    }
+                }, 2000);
             }
 
             initiateContactWithoutTemplate(menteeId, type) {
@@ -1410,6 +1417,13 @@ m 919-215-0170`;
                     const cleanPhone = mentee.mobile.replace(/\D/g, '');
                     window.location.href = `tel:${cleanPhone}`;
                 }
+
+                // Ask if user wants to log the interaction after a delay
+                setTimeout(() => {
+                    if (confirm(`Did you send the ${type} to ${mentee.name}? Log this interaction?`)) {
+                        this.logInteraction(menteeId, type);
+                    }
+                }, 2000);
             }
 
             showToast(message, type = 'success') {
