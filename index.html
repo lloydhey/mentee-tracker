@@ -740,7 +740,28 @@
         // 3. Make it public: Share → Anyone with link can edit
         // 4. Copy the Sheet ID from URL: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit
         const GOOGLE_SHEET_ID = '1wuo6HFBtSFWDH95HZ1uCtLVZ777uVVtcp0GI95Qcyvw';
-        const TEMPLATE_DOC_ID = '1RAGTKVmyJFVM7tWdVrIzYkcX4OEBKJoJ6p7TdOXIB3g'; // Template Google Doc
+        // Template content (from CG Invite 20251019.txt)
+        const TEMPLATE_CONTENT = `Subject:
+Join us for Special Outpost Dinner & Talk this evening at the Hey's!
+
+Body:
+Hi [FirstName]!
+Hope your week has been going well!
+Lori and I hope you can carve time out of your day today to join us for a very special Outpost dinner at our home.
+We're going to share a great meal together, a short time of worship, and then hear from a great speaker, Bob Mason, who is coming all the way from southern California to join us!
+Bob has been training young future physicians how to fully integrate their faith with their work life in medicine, including how to take a good spiritual history.
+We'll meet from 5:55p-8:00p at our home at 6704 Creek Wood Drive, Chapel Hill.
+
+If you can't join us in person due to rotations, or other travel, we'll also have Bob's talk on Zoom starting at 7:00pm
+https://us02web.zoom.us/j/9192150170?pwd=RRNoON3J5M1gh21PCAJ8lTnu75a90J.1&omn=88535613636
+Meeting ID: 919 215 0170
+Passcode: Outpost
+
+Hope to see you in person though!  Feel free to bring a friend.
+If you can email me back so we can get a good head count for dinner that would be helpful.
+Hope to see you soon!
+Dr. Hey
+m 919-215-0170`;
         
         // STEP 2: Get Google OAuth2 Client ID
         // 1. Go to https://console.cloud.google.com/
@@ -891,33 +912,9 @@
                 return response.json();
             }
 
-            async getTemplateContent() {
-                try {
-                    const url = `https://docs.googleapis.com/v1/documents/${TEMPLATE_DOC_ID}`;
-                    console.log('Fetching template from:', url);
-                    const doc = await this.makeAuthenticatedRequest(url);
-                    console.log('Template document received:', doc);
-                    
-                    // Extract text content from the document
-                    let content = '';
-                    if (doc.body && doc.body.content) {
-                        for (const element of doc.body.content) {
-                            if (element.paragraph && element.paragraph.elements) {
-                                for (const textElement of element.paragraph.elements) {
-                                    if (textElement.textRun && textElement.textRun.content) {
-                                        content += textElement.textRun.content;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    console.log('Extracted template content:', content);
-                    return content.trim();
-                } catch (error) {
-                    console.error('Error fetching template:', error);
-                    return null;
-                }
+            getTemplateContent() {
+                // Return the static template content
+                return TEMPLATE_CONTENT;
             }
         }
 
@@ -1324,7 +1321,7 @@
                 
                 if (useTemplate) {
                     try {
-                        const templateContent = await this.storage.auth.getTemplateContent();
+                        const templateContent = this.storage.auth.getTemplateContent();
                         if (templateContent) {
                             if (type === 'email') {
                                 if (!mentee.email) return;
@@ -1345,17 +1342,34 @@
                                     }
                                 }
                                 
-                                // If no subject/body structure, use entire content as body
-                                if (!subject && !body) {
-                                    body = templateContent;
-                                }
+                                // Replace [FirstName] with actual mentee name
+                                const firstName = mentee.name.split(' ')[0];
+                                body = body.replace(/\[FirstName\]/g, firstName);
                                 
                                 const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(mentee.email)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
                                 window.open(gmailUrl, '_blank');
                             } else if (type === 'text') {
                                 if (!mentee.mobile) return;
                                 const cleanPhone = mentee.mobile.replace(/\D/g, '');
-                                const smsUrl = `sms:${cleanPhone}&body=${encodeURIComponent(templateContent)}`;
+                                // For text, use just the body content without subject
+                                const lines = templateContent.split('\n');
+                                let body = '';
+                                let inBody = false;
+                                
+                                for (const line of lines) {
+                                    if (line.toLowerCase().startsWith('body:')) {
+                                        inBody = true;
+                                        body = line.substring(5).trim();
+                                    } else if (inBody) {
+                                        body += '\n' + line;
+                                    }
+                                }
+                                
+                                // Replace [FirstName] with actual mentee name
+                                const firstName = mentee.name.split(' ')[0];
+                                body = body.replace(/\[FirstName\]/g, firstName);
+                                
+                                const smsUrl = `sms:${cleanPhone}&body=${encodeURIComponent(body)}`;
                                 window.location.href = smsUrl;
                             }
                         } else {
