@@ -741,8 +741,7 @@
         // 4. Copy the Sheet ID from URL: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit
         const GOOGLE_SHEET_ID = '1wuo6HFBtSFWDH95HZ1uCtLVZ777uVVtcp0GI95Qcyvw';
         // Template content (from CG Invite 20251019.txt)
-        const TEMPLATE_CONTENT = `Subject:
-Join us for Special Outpost Dinner & Talk this evening at the Hey's!
+        const TEMPLATE_CONTENT = `Subject:  Join us for Special Outpost Dinner & Talk this evening at the Hey's!
 
 Body:
 Hi [FirstName]!
@@ -1334,10 +1333,8 @@ m 919-215-0170`;
                                 for (let i = 0; i < lines.length; i++) {
                                     const line = lines[i];
                                     if (line.toLowerCase().startsWith('subject:')) {
-                                        // Subject is on the next line
-                                        if (i + 1 < lines.length) {
-                                            subject = lines[i + 1].trim();
-                                        }
+                                        // Subject is on the same line after the colon
+                                        subject = line.substring(8).trim();
                                     } else if (line.toLowerCase().startsWith('body:')) {
                                         inBody = true;
                                         // Body starts on the next line
