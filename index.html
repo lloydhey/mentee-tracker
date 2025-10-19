@@ -913,7 +913,6 @@ m 919-215-0170`;
 
             getTemplateContent() {
                 // Return the static template content
-                console.log('Template content being used:', TEMPLATE_CONTENT);
                 return TEMPLATE_CONTENT;
             }
         }
@@ -1347,21 +1346,11 @@ m 919-215-0170`;
                                     }
                                 }
                                 
-                                console.log('Parsed subject:', subject);
-                                console.log('Parsed body before replacement:', body);
-                                console.log('Subject length:', subject.length);
-                                console.log('Body length:', body.length);
-                                
                                 // Replace [FirstName] with actual mentee name
                                 const firstName = mentee.name.split(' ')[0];
-                                console.log('Mentee name:', mentee.name, 'First name:', firstName);
                                 body = body.replace(/\[FirstName\]/g, firstName);
-                                console.log('Body after replacement:', body);
                                 
-                                console.log('Final subject for Gmail:', subject);
-                                console.log('Final body for Gmail:', body);
                                 const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(mentee.email)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                                console.log('Gmail URL:', gmailUrl);
                                 window.open(gmailUrl, '_blank');
                             } else if (type === 'text') {
                                 if (!mentee.mobile) return;
@@ -1384,13 +1373,9 @@ m 919-215-0170`;
                                     }
                                 }
                                 
-                                console.log('Text body before replacement:', body);
-                                
                                 // Replace [FirstName] with actual mentee name
                                 const firstName = mentee.name.split(' ')[0];
-                                console.log('Text - Mentee name:', mentee.name, 'First name:', firstName);
                                 body = body.replace(/\[FirstName\]/g, firstName);
-                                console.log('Text body after replacement:', body);
                                 
                                 const smsUrl = `sms:${cleanPhone}&body=${encodeURIComponent(body)}`;
                                 window.location.href = smsUrl;
