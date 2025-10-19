@@ -97,6 +97,109 @@
             border: 1px solid #f59e0b;
         }
 
+        /* New Header Layout */
+        .main-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            position: relative;
+        }
+
+        .header-left, .header-center, .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-center {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 2rem;
+        }
+
+        .menu-button {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+        }
+
+        .menu-button:hover {
+            background-color: #f3f4f6;
+        }
+
+        .menu-button span {
+            width: 20px;
+            height: 2px;
+            background-color: #374151;
+            margin: 2px 0;
+            transition: 0.3s;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .add-button {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 1rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none;
+            min-width: 200px;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .menu-item {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: #f3f4f6;
+        }
+
+        .menu-item:first-child {
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        .menu-item:last-child {
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+
         /* Stats Bar */
         .stats-bar {
             display: flex;
@@ -537,43 +640,31 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
-        <header>
-            <h1>📋 Mentee Connection Tracker</h1>
-            <p class="subtitle">Stay connected with your mentees</p>
-            <div id="connectionStatus" class="connection-status">
-                <span id="statusText">Connecting to Google Sheets...</span>
+        <!-- Header with Menu and Search -->
+        <header class="main-header">
+            <div class="header-left">
+                <div class="menu-button" onclick="app.toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="search-box">
+                    <input type="search" id="searchInput" placeholder="Search mentees...">
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn-primary add-button" onclick="app.showAddMenteeModal()">+</button>
             </div>
         </header>
 
-        <!-- Stats Bar -->
-        <div class="stats-bar">
-            <div class="stat-card">
-                <div class="stat-value" id="totalMentees">0</div>
-                <div class="stat-label">Total Mentees</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="needsContact">0</div>
-                <div class="stat-label">Needs Contact</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="weeklyContacts">0</div>
-                <div class="stat-label">This Week</div>
-            </div>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls">
-            <div class="search-box">
-                <input type="search" id="searchInput" placeholder="Search mentees by name or specialty...">
-            </div>
-            <div class="button-row">
-                <button class="btn-primary" onclick="app.showAddMenteeModal()">+ Add Mentee</button>
-                <button class="btn-secondary" onclick="app.showBulkImportModal()">📥 Bulk Import</button>
-                <button class="btn-secondary" onclick="app.exportData()">Export Data</button>
-                <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Import Data</button>
-                <input type="file" id="importFile" accept=".json" onchange="app.importData(event)">
-            </div>
+        <!-- Dropdown Menu -->
+        <div id="dropdownMenu" class="dropdown-menu">
+            <button class="menu-item" onclick="app.showBulkImportModal()">📥 Bulk Import</button>
+            <button class="menu-item" onclick="app.exportData()">📤 Export Data</button>
+            <button class="menu-item" onclick="document.getElementById('importFile').click()">📁 Import Data</button>
+            <input type="file" id="importFile" accept=".json" onchange="app.importData(event)" style="display: none;">
         </div>
 
         <!-- Mentee List -->
@@ -1457,6 +1548,11 @@ m 919-215-0170`;
                 this.render();
             }
 
+            toggleMenu() {
+                const menu = document.getElementById('dropdownMenu');
+                menu.classList.toggle('show');
+            }
+
             showAddMenteeModal() {
                 try {
                     document.getElementById('menteeName').value = '';
@@ -1722,20 +1818,9 @@ m 919-215-0170`;
             }
 
             render() {
-                this.renderStats();
                 this.renderMenteeList();
             }
 
-            renderStats() {
-                const needsContact = this.mentees.filter(m => {
-                    const info = this.getDaysAgo(m.lastContact, parseInt(m.fu) || 14);
-                    return info.days >= Math.floor((parseInt(m.fu) || 14) / 2);
-                }).length;
-
-                document.getElementById('totalMentees').textContent = this.mentees.length;
-                document.getElementById('needsContact').textContent = needsContact;
-                document.getElementById('weeklyContacts').textContent = this.getWeeklyStats();
-            }
 
             renderMenteeList() {
                 const container = document.getElementById('menteeList');
