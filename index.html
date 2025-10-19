@@ -1270,18 +1270,20 @@ m 919-215-0170`;
             }
 
             updateConnectionStatus(type, message) {
-                const statusEl = document.getElementById('connectionStatus');
-                const textEl = document.getElementById('statusText');
-                
-                statusEl.className = `connection-status ${type}`;
-                textEl.textContent = message;
+                // Connection status display was removed, so just log the status
+                console.log(`Connection status: ${type} - ${message}`);
             }
 
             setupEventListeners() {
-                document.getElementById('searchInput').addEventListener('input', (e) => {
-                    this.searchTerm = e.target.value.toLowerCase();
-                    this.render();
-                });
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.addEventListener('input', (e) => {
+                        this.searchTerm = e.target.value.toLowerCase();
+                        this.render();
+                    });
+                } else {
+                    console.error('Search input not found');
+                }
 
                 // Close modal on background click
                 document.querySelectorAll('.modal').forEach(modal => {
@@ -1891,7 +1893,13 @@ m 919-215-0170`;
 
             renderMenteeList() {
                 const container = document.getElementById('menteeList');
+                if (!container) {
+                    console.error('Mentee list container not found');
+                    return;
+                }
+                
                 const filteredMentees = this.getFilteredMentees();
+                console.log('Rendering', filteredMentees.length, 'mentees');
 
                 if (filteredMentees.length === 0) {
                     container.innerHTML = `
