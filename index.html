@@ -359,6 +359,218 @@
             min-width: 150px;
         }
 
+        .contact-title {
+            flex: 1;
+            text-align: center;
+        }
+
+        .contact-status {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .status-red {
+            color: #dc2626;
+        }
+
+        .status-green {
+            color: #16a34a;
+        }
+
+        .status-yellow {
+            color: #ca8a04;
+        }
+
+        .btn-edit {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        .btn-edit:hover {
+            background: #e5e7eb;
+        }
+
+        .contact-photo-section {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .contact-photo {
+            display: inline-block;
+            position: relative;
+        }
+
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #e5e7eb;
+        }
+
+        .photo-placeholder {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: 3px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #9ca3af;
+        }
+
+        .btn-photo {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-photo:hover {
+            background: #2563eb;
+        }
+
+        .contact-log-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+        }
+
+        .contact-log-section h3 {
+            margin: 0 0 1rem 0;
+            color: #111827;
+        }
+
+        .log-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-log {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .btn-log:hover {
+            background: #2563eb;
+        }
+
+        .btn-log.txt {
+            background: #10b981;
+        }
+
+        .btn-log.txt:hover {
+            background: #059669;
+        }
+
+        .btn-log.call {
+            background: #f59e0b;
+        }
+
+        .btn-log.call:hover {
+            background: #d97706;
+        }
+
+        .btn-log.email {
+            background: #8b5cf6;
+        }
+
+        .btn-log.email:hover {
+            background: #7c3aed;
+        }
+
+        .btn-log.ftf {
+            background: #ef4444;
+        }
+
+        .btn-log.ftf:hover {
+            background: #dc2626;
+        }
+
+        .interaction-history {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .log-icon {
+            font-size: 1.2rem;
+        }
+
+        .log-date {
+            font-size: 0.9rem;
+            color: #6b7280;
+            min-width: 120px;
+        }
+
+        .log-notes {
+            flex: 1;
+            color: #374151;
+        }
+
+        .no-interactions {
+            text-align: center;
+            color: #9ca3af;
+            font-style: italic;
+            padding: 2rem;
+        }
+
+        .contact-notes {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+        }
+
+        .contact-notes h3 {
+            margin: 0 0 1rem 0;
+            color: #111827;
+        }
+
+        .notes-content {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            border: 1px solid #e5e7eb;
+            white-space: pre-wrap;
+            color: #374151;
+        }
+
         .menu-item:first-child {
             border-radius: 0.5rem 0.5rem 0 0;
         }
@@ -1757,11 +1969,34 @@ m 919-215-0170`;
                 const container = document.getElementById('menteeList');
                 if (!container) return;
 
+                // Calculate time since last contact
+                const lastContactInfo = this.getDaysAgo(mentee.lastContact, parseInt(mentee.fu) || 14);
+                const needsFollowUp = this.needsFollowUp(mentee);
+                const statusColor = needsFollowUp ? 'red' : lastContactInfo.color;
+                const statusText = needsFollowUp ? '🔴 NEEDS FOLLOW-UP' : lastContactInfo.text;
+
+                // Get recent interactions
+                const recentInteractions = (mentee.interactions || []).slice(0, 10);
+
                 container.innerHTML = `
                     <div class="contact-view">
                         <div class="contact-header">
-                            <button class="btn-back" onclick="app.render()">← Back to List</button>
-                            <h2>${this.escapeHtml(mentee.name)}</h2>
+                            <button class="btn-back" onclick="app.render()">← Back</button>
+                            <div class="contact-title">
+                                <h2>${this.escapeHtml(mentee.name)}</h2>
+                                <div class="contact-status status-${statusColor}">${statusText}</div>
+                            </div>
+                            <button class="btn-edit" onclick="app.showEditMenteeModal('${mentee.id}')">✏️ Edit</button>
+                        </div>
+                        
+                        <div class="contact-photo-section">
+                            <div class="contact-photo">
+                                ${mentee.photo ? 
+                                    `<img src="${mentee.photo}" alt="${mentee.name}" class="profile-photo">` : 
+                                    `<div class="photo-placeholder">📷</div>`
+                                }
+                                <button class="btn-photo" onclick="app.uploadPhoto('${mentee.id}')">📷 Add Photo</button>
+                            </div>
                         </div>
                         
                         <div class="contact-info">
@@ -1770,8 +2005,6 @@ m 919-215-0170`;
                                     <div class="contact-label">📱 Mobile</div>
                                     <div class="contact-value">
                                         <a href="tel:${mentee.mobile}">${mentee.mobile}</a>
-                                        <button class="btn-call" onclick="app.initiateContact('${mentee.id}', 'call')">📞 Call</button>
-                                        <button class="btn-text" onclick="app.initiateContact('${mentee.id}', 'text')">📱 Text</button>
                                     </div>
                                 </div>
                             ` : ''}
@@ -1780,8 +2013,7 @@ m 919-215-0170`;
                                 <div class="contact-item">
                                     <div class="contact-label">📧 Email</div>
                                     <div class="contact-value">
-                                        <a href="mailto:${mentee.email}">${mentee.email}</a>
-                                        <button class="btn-email" onclick="app.initiateContact('${mentee.id}', 'email')">📧 Email</button>
+                                        <a href="mailto:${mentee.email}" onclick="app.handleEmailClick('${mentee.id}', event)">${mentee.email}</a>
                                     </div>
                                 </div>
                             ` : ''}
@@ -1795,14 +2027,14 @@ m 919-215-0170`;
                             
                             ${mentee.yr ? `
                                 <div class="contact-item">
-                                    <div class="contact-label">📅 Year</div>
+                                    <div class="contact-label">🎓 Grad Yr</div>
                                     <div class="contact-value">${this.escapeHtml(mentee.yr)}</div>
                                 </div>
                             ` : ''}
                             
                             ${mentee.lot ? `
                                 <div class="contact-item">
-                                    <div class="contact-label">🎓 Level</div>
+                                    <div class="contact-label">📚 Level</div>
                                     <div class="contact-value">${this.escapeHtml(mentee.lot)}</div>
                                 </div>
                             ` : ''}
@@ -1821,10 +2053,17 @@ m 919-215-0170`;
                                 </div>
                             ` : ''}
                             
-                            ${mentee.poc === 'Yes' ? `
+                            ${mentee.poc ? `
                                 <div class="contact-item">
                                     <div class="contact-label">⭐ Point of Contact</div>
-                                    <div class="contact-value">Yes</div>
+                                    <div class="contact-value">${this.escapeHtml(mentee.poc)}</div>
+                                </div>
+                            ` : ''}
+                            
+                            ${mentee.mf ? `
+                                <div class="contact-item">
+                                    <div class="contact-label">👤 Gender</div>
+                                    <div class="contact-value">${this.escapeHtml(mentee.mf)}</div>
                                 </div>
                             ` : ''}
                             
@@ -1834,28 +2073,112 @@ m 919-215-0170`;
                                     <div class="contact-value">${this.escapeHtml(mentee.address)}</div>
                                 </div>
                             ` : ''}
-                            
-                            ${mentee.notes ? `
-                                <div class="contact-item">
-                                    <div class="contact-label">📝 Notes</div>
-                                    <div class="contact-value">${this.escapeHtml(mentee.notes)}</div>
-                                </div>
-                            ` : ''}
                         </div>
                         
-                        <div class="contact-actions">
-                            <button class="btn-primary" onclick="app.logFaceToFace('${mentee.id}')">
-                                🤝 Log Face-to-Face Meeting
-                            </button>
-                            <button class="btn-secondary" onclick="app.showEditNotesModal('${mentee.id}')">
-                                📝 Edit Notes
-                            </button>
-                            <button class="btn-danger" onclick="app.deleteMentee('${mentee.id}')">
-                                🗑️ Delete Contact
-                            </button>
+                        <div class="contact-log-section">
+                            <h3>📋 Interaction Log</h3>
+                            <div class="log-buttons">
+                                <button class="btn-log txt" onclick="app.logInteraction('${mentee.id}', 'text')">📱 TXT</button>
+                                <button class="btn-log call" onclick="app.logInteraction('${mentee.id}', 'call')">📞 PC</button>
+                                <button class="btn-log email" onclick="app.logInteraction('${mentee.id}', 'email')">📧 EM</button>
+                                <button class="btn-log ftf" onclick="app.logFaceToFace('${mentee.id}')">🤝 FTF</button>
+                            </div>
+                            
+                            <div class="interaction-history">
+                                ${recentInteractions.length > 0 ? 
+                                    recentInteractions.map(interaction => {
+                                        const icon = interaction.type === 'text' ? '📱' : 
+                                                    interaction.type === 'call' ? '📞' : 
+                                                    interaction.type === 'ftf' ? '🤝' : '📧';
+                                        const noteText = interaction.notes ? ` - ${interaction.notes}` : '';
+                                        return `
+                                        <div class="log-entry">
+                                            <span class="log-icon">${icon}</span>
+                                            <span class="log-date">${this.formatDate(interaction.timestamp)}</span>
+                                            <span class="log-notes">${this.escapeHtml(interaction.notes || '')}</span>
+                                        </div>
+                                    `;
+                                    }).join('') : 
+                                    '<div class="no-interactions">No interactions logged yet</div>'
+                                }
+                            </div>
                         </div>
+                        
+                        ${mentee.notes ? `
+                            <div class="contact-notes">
+                                <h3>📝 Notes</h3>
+                                <div class="notes-content">${this.escapeHtml(mentee.notes)}</div>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
+            }
+
+            handleEmailClick(menteeId, event) {
+                event.preventDefault();
+                const useTemplate = confirm('Use template for this email?');
+                if (useTemplate) {
+                    this.initiateContact(menteeId, 'email');
+                } else {
+                    const mentee = this.mentees.find(m => m.id === menteeId);
+                    if (mentee && mentee.email) {
+                        window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(mentee.email)}`, '_blank');
+                    }
+                }
+            }
+
+            uploadPhoto(menteeId) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = async (e) => {
+                            const photoData = e.target.result;
+                            try {
+                                await this.storage.updateMentee(menteeId, { photo: photoData });
+                                this.showToast('Photo uploaded successfully!', 'success');
+                                this.showContactView(menteeId); // Refresh the view
+                            } catch (error) {
+                                console.error('Error uploading photo:', error);
+                                this.showToast('Error uploading photo', 'error');
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            }
+
+            showEditMenteeModal(menteeId) {
+                const mentee = this.mentees.find(m => m.id === menteeId);
+                if (!mentee) return;
+
+                // Pre-fill the form with existing data
+                document.getElementById('menteeName').value = mentee.name || '';
+                document.getElementById('menteeMobile').value = mentee.mobile || '';
+                document.getElementById('menteeEmail').value = mentee.email || '';
+                document.getElementById('menteeFu').value = mentee.fu || '';
+                document.getElementById('menteeQs').value = mentee.qs || '';
+                document.getElementById('menteePoc').value = mentee.poc || '';
+                document.getElementById('menteeMf').value = mentee.mf || '';
+                document.getElementById('menteeLot').value = mentee.lot || '';
+                document.getElementById('menteeTyp').value = mentee.typ || '';
+                document.getElementById('menteeLoc').value = mentee.loc || '';
+                document.getElementById('menteeYr').value = mentee.yr || '';
+                document.getElementById('menteeNotes').value = mentee.notes || '';
+                document.getElementById('menteeAddress').value = mentee.address || '';
+
+                // Store the mentee ID for editing
+                document.getElementById('addMenteeModal').setAttribute('data-edit-id', menteeId);
+                
+                // Change the modal title and button
+                document.querySelector('#addMenteeModal h2').textContent = 'Edit Contact';
+                document.querySelector('#addMenteeModal button[type="submit"]').textContent = 'Update Contact';
+                
+                document.getElementById('addMenteeModal').classList.add('show');
             }
 
             showAddMenteeModal() {
@@ -1882,7 +2205,7 @@ m 919-215-0170`;
             async addMentee() {
                 console.log('addMentee called');
                 try {
-                const name = document.getElementById('menteeName').value.trim();
+                    const name = document.getElementById('menteeName').value.trim();
                     const mobile = document.getElementById('menteeMobile').value.trim();
                     const email = document.getElementById('menteeEmail').value.trim();
                     const fu = document.getElementById('menteeFu').value.trim();
@@ -1896,42 +2219,71 @@ m 919-215-0170`;
                     const notes = document.getElementById('menteeNotes').value.trim();
                     const address = document.getElementById('menteeAddress').value.trim();
 
-                    if (!name || !mobile || !email || !fu) {
-                        alert('Please fill in all required fields (Name, Mobile, Email, Follow-up Days)');
-                    return;
-                }
+                    if (!name) {
+                        alert('Please enter a name');
+                        return;
+                    }
 
-                const newMentee = {
-                    name,
-                        mobile,
-                        email,
-                        fu: parseInt(fu) || 30,
-                        qs: qs || '',
-                        poc: poc || '',
-                        mf: mf || '',
-                        lot: lot || '',
-                        typ: typ || '',
-                        loc: loc || '',
-                        yr: yr || '',
-                        notes: notes || '',
-                        address: address || '',
-                    lastContact: null,
-                    interactions: []
-                };
+                    const modal = document.getElementById('addMenteeModal');
+                    const editId = modal.getAttribute('data-edit-id');
+                    
+                    if (editId) {
+                        // Editing existing mentee
+                        const mentee = {
+                            name,
+                            mobile,
+                            email,
+                            fu: parseInt(fu) || 30,
+                            qs: qs || '',
+                            poc: poc || '',
+                            mf: mf || '',
+                            lot: lot || '',
+                            typ: typ || '',
+                            loc: loc || '',
+                            yr: yr || '',
+                            notes: notes || '',
+                            address: address || ''
+                        };
 
-                    console.log('Saving mentee:', newMentee);
-                await this.storage.addMentee(newMentee);
-                    console.log('Mentee saved, loading mentees...');
-                await this.loadMentees();
-                    console.log('Closing modal...');
-                this.closeModal('addMenteeModal');
-                    console.log('Rendering...');
-                this.render();
-                this.showToast(`${name} added successfully!`, 'success');
-                    console.log('addMentee completed');
+                        await this.storage.updateMentee(editId, mentee);
+                        this.closeModal('addMenteeModal');
+                        await this.loadMentees();
+                        this.render();
+                        this.showToast(`${name} updated successfully!`, 'success');
+                        
+                        // Reset modal for future use
+                        modal.removeAttribute('data-edit-id');
+                        document.querySelector('#addMenteeModal h2').textContent = 'Add New Contact';
+                        document.querySelector('#addMenteeModal button[type="submit"]').textContent = 'Add Contact';
+                    } else {
+                        // Adding new mentee
+                        const newMentee = {
+                            name,
+                            mobile,
+                            email,
+                            fu: parseInt(fu) || 30,
+                            qs: qs || '',
+                            poc: poc || '',
+                            mf: mf || '',
+                            lot: lot || '',
+                            typ: typ || '',
+                            loc: loc || '',
+                            yr: yr || '',
+                            notes: notes || '',
+                            address: address || '',
+                            lastContact: null,
+                            interactions: []
+                        };
+
+                        await this.storage.addMentee(newMentee);
+                        this.closeModal('addMenteeModal');
+                        await this.loadMentees();
+                        this.render();
+                        this.showToast(`${name} added successfully!`, 'success');
+                    }
                 } catch (error) {
-                    console.error('Error adding mentee:', error);
-                    alert(`Error adding mentee: ${error.message}`);
+                    console.error('Error saving mentee:', error);
+                    alert(`Error saving mentee: ${error.message}`);
                 }
             }
 
