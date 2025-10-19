@@ -740,6 +740,7 @@
         // 3. Make it public: Share → Anyone with link can edit
         // 4. Copy the Sheet ID from URL: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit
         const GOOGLE_SHEET_ID = '1wuo6HFBtSFWDH95HZ1uCtLVZ777uVVtcp0GI95Qcyvw';
+        const TEMPLATE_DOC_ID = '1RAGTKVmyJFVM7tWdVrIzYkcX4OEBKJoJ6p7TdOXIB3g'; // Template Google Doc
         
         // STEP 2: Get Google OAuth2 Client ID
         // 1. Go to https://console.cloud.google.com/
@@ -829,7 +830,7 @@
                     if (typeof google !== 'undefined' && google.accounts) {
                         const client = google.accounts.oauth2.initTokenClient({
                             client_id: this.clientId,
-                            scope: 'https://www.googleapis.com/auth/spreadsheets',
+                            scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/documents.readonly',
                             redirect_uri: window.location.origin + window.location.pathname,
                             callback: (response) => {
                                 if (response.error) {
@@ -850,7 +851,7 @@
                             }).then(() => {
                                 const authInstance = gapi.auth2.getAuthInstance();
                                 authInstance.signIn({
-                                    scope: 'https://www.googleapis.com/auth/spreadsheets'
+                                    scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/documents.readonly'
                                 }).then((googleUser) => {
                                     this.accessToken = googleUser.getAuthResponse().access_token;
                                     this.isAuthenticated = true;
@@ -888,6 +889,32 @@
                 }
                 
                 return response.json();
+            }
+
+            async getTemplateContent() {
+                try {
+                    const url = `https://docs.googleapis.com/v1/documents/${TEMPLATE_DOC_ID}`;
+                    const doc = await this.makeAuthenticatedRequest(url);
+                    
+                    // Extract text content from the document
+                    let content = '';
+                    if (doc.body && doc.body.content) {
+                        for (const element of doc.body.content) {
+                            if (element.paragraph && element.paragraph.elements) {
+                                for (const textElement of element.paragraph.elements) {
+                                    if (textElement.textRun && textElement.textRun.content) {
+                                        content += textElement.textRun.content;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    return content.trim();
+                } catch (error) {
+                    console.error('Error fetching template:', error);
+                    return null;
+                }
             }
         }
 
@@ -1285,13 +1312,69 @@
                 await this.logInteraction(menteeId, 'ftf', ftfType.trim());
             }
 
-            initiateContact(menteeId, type) {
+            async initiateContact(menteeId, type) {
+                const mentee = this.mentees.find(m => m.id === menteeId);
+                if (!mentee) return;
+
+                // Ask if user wants to use template (default to yes)
+                const useTemplate = confirm(`Use template for ${type} to ${mentee.name}?`);
+                
+                if (useTemplate) {
+                    try {
+                        const templateContent = await this.storage.auth.getTemplateContent();
+                        if (templateContent) {
+                            if (type === 'email') {
+                                if (!mentee.email) return;
+                                // Parse template for subject and body
+                                const lines = templateContent.split('\n');
+                                let subject = '';
+                                let body = '';
+                                let inBody = false;
+                                
+                                for (const line of lines) {
+                                    if (line.toLowerCase().startsWith('subject:')) {
+                                        subject = line.substring(8).trim();
+                                    } else if (line.toLowerCase().startsWith('body:')) {
+                                        inBody = true;
+                                        body = line.substring(5).trim();
+                                    } else if (inBody) {
+                                        body += '\n' + line;
+                                    }
+                                }
+                                
+                                // If no subject/body structure, use entire content as body
+                                if (!subject && !body) {
+                                    body = templateContent;
+                                }
+                                
+                                const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(mentee.email)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                                window.open(gmailUrl, '_blank');
+                            } else if (type === 'text') {
+                                if (!mentee.mobile) return;
+                                const cleanPhone = mentee.mobile.replace(/\D/g, '');
+                                const smsUrl = `sms:${cleanPhone}&body=${encodeURIComponent(templateContent)}`;
+                                window.location.href = smsUrl;
+                            }
+                        } else {
+                            // Fallback to regular contact if template fails
+                            this.initiateContactWithoutTemplate(menteeId, type);
+                        }
+                    } catch (error) {
+                        console.error('Error using template:', error);
+                        // Fallback to regular contact
+                        this.initiateContactWithoutTemplate(menteeId, type);
+                    }
+                } else {
+                    this.initiateContactWithoutTemplate(menteeId, type);
+                }
+            }
+
+            initiateContactWithoutTemplate(menteeId, type) {
                 const mentee = this.mentees.find(m => m.id === menteeId);
                 if (!mentee) return;
 
                 if (type === 'email') {
                     if (!mentee.email) return;
-                    // Use Gmail compose instead of mailto
                     window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(mentee.email)}`, '_blank');
                 } else if (type === 'text') {
                     if (!mentee.mobile) return;
@@ -1302,8 +1385,6 @@
                     const cleanPhone = mentee.mobile.replace(/\D/g, '');
                     window.location.href = `tel:${cleanPhone}`;
                 }
-
-                // Don't automatically log - let user decide after they've sent the message
             }
 
             showToast(message, type = 'success') {
