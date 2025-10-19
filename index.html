@@ -666,17 +666,17 @@
                     <span></span>
                     <span></span>
                     <span></span>
-                </div>
+            </div>
                 <div class="stats-compact">
                     <span class="stat-item">Total: <span id="totalMentees">0</span></span>
                     <span class="stat-item">Need Contact: <span id="needsContact">0</span></span>
                     <span class="stat-item">This Week: <span id="weeklyContacts">0</span></span>
-                </div>
+            </div>
             </div>
             <div class="header-center">
-                <div class="search-box">
+            <div class="search-box">
                     <input type="search" id="searchInput" placeholder="Search mentees...">
-                </div>
+            </div>
             </div>
             <div class="header-right">
                 <button class="btn-primary add-button" onclick="app.showAddMenteeModal()">+</button>
@@ -1239,8 +1239,8 @@ m 919-215-0170`;
                     await this.loadMentees();
                     
                     this.updateConnectionStatus('connected', '✅ Connected to Google Sheets');
-                    this.setupEventListeners();
-                    this.render();
+                this.setupEventListeners();
+                this.render();
                 } catch (error) {
                     console.error('Error initializing app:', error);
                     this.updateConnectionStatus('error', `❌ Error: ${error.message}`);
@@ -1291,10 +1291,26 @@ m 919-215-0170`;
                         }
                     });
                 });
+
+                // Close dropdown menu when clicking outside
+                document.addEventListener('click', (e) => {
+                    const menu = document.getElementById('dropdownMenu');
+                    const menuButton = document.querySelector('.menu-button');
+                    if (menu && menuButton && !menuButton.contains(e.target) && !menu.contains(e.target)) {
+                        menu.classList.remove('show');
+                    }
+                });
             }
 
             async loadMentees() {
+                try {
                 this.mentees = await this.storage.getAllMentees();
+                    console.log('Loaded mentees:', this.mentees.length);
+                    console.log('First mentee:', this.mentees[0]);
+                } catch (error) {
+                    console.error('Error loading mentees:', error);
+                    this.mentees = [];
+                }
             }
 
 
@@ -1495,7 +1511,7 @@ m 919-215-0170`;
                                 const smsUrl = `sms:${cleanPhone}&body=${encodeURIComponent(body)}`;
                                 window.location.href = smsUrl;
                             }
-                        } else {
+                } else {
                             // Fallback to regular contact if template fails
                             this.initiateContactWithoutTemplate(menteeId, type);
                         }
@@ -1536,7 +1552,7 @@ m 919-215-0170`;
                 // Ask if user wants to log the interaction after a delay
                 setTimeout(() => {
                     if (confirm(`Did you send the ${type} to ${mentee.name}? Log this interaction?`)) {
-                        this.logInteraction(menteeId, type);
+                    this.logInteraction(menteeId, type);
                     }
                 }, 2000);
             }
@@ -1574,12 +1590,16 @@ m 919-215-0170`;
 
             toggleMenu() {
                 const menu = document.getElementById('dropdownMenu');
-                menu.classList.toggle('show');
+                if (menu) {
+                    menu.classList.toggle('show');
+                } else {
+                    console.error('Dropdown menu not found');
+                }
             }
 
             showAddMenteeModal() {
                 try {
-                    document.getElementById('menteeName').value = '';
+                document.getElementById('menteeName').value = '';
                     document.getElementById('menteeMobile').value = '';
                     document.getElementById('menteeEmail').value = '';
                     document.getElementById('menteeFu').value = '14';
@@ -1601,7 +1621,7 @@ m 919-215-0170`;
             async addMentee() {
                 console.log('addMentee called');
                 try {
-                    const name = document.getElementById('menteeName').value.trim();
+                const name = document.getElementById('menteeName').value.trim();
                     const mobile = document.getElementById('menteeMobile').value.trim();
                     const email = document.getElementById('menteeEmail').value.trim();
                     const fu = document.getElementById('menteeFu').value.trim();
@@ -1617,11 +1637,11 @@ m 919-215-0170`;
 
                     if (!name || !mobile || !email || !fu) {
                         alert('Please fill in all required fields (Name, Mobile, Email, Follow-up Days)');
-                        return;
-                    }
+                    return;
+                }
 
-                    const newMentee = {
-                        name,
+                const newMentee = {
+                    name,
                         mobile,
                         email,
                         fu: parseInt(fu) || 30,
@@ -1634,19 +1654,19 @@ m 919-215-0170`;
                         yr: yr || '',
                         notes: notes || '',
                         address: address || '',
-                        lastContact: null,
-                        interactions: []
-                    };
+                    lastContact: null,
+                    interactions: []
+                };
 
                     console.log('Saving mentee:', newMentee);
-                    await this.storage.addMentee(newMentee);
+                await this.storage.addMentee(newMentee);
                     console.log('Mentee saved, loading mentees...');
-                    await this.loadMentees();
+                await this.loadMentees();
                     console.log('Closing modal...');
-                    this.closeModal('addMenteeModal');
+                this.closeModal('addMenteeModal');
                     console.log('Rendering...');
-                    this.render();
-                    this.showToast(`${name} added successfully!`, 'success');
+                this.render();
+                this.showToast(`${name} added successfully!`, 'success');
                     console.log('addMentee completed');
                 } catch (error) {
                     console.error('Error adding mentee:', error);
@@ -1847,14 +1867,25 @@ m 919-215-0170`;
             }
 
             renderStats() {
+                console.log('Rendering stats for', this.mentees.length, 'mentees');
                 const needsContact = this.mentees.filter(m => {
                     const info = this.getDaysAgo(m.lastContact, parseInt(m.fu) || 14);
                     return info.days >= Math.floor((parseInt(m.fu) || 14) / 2);
                 }).length;
 
-                document.getElementById('totalMentees').textContent = this.mentees.length;
-                document.getElementById('needsContact').textContent = needsContact;
-                document.getElementById('weeklyContacts').textContent = this.getWeeklyStats();
+                const totalElement = document.getElementById('totalMentees');
+                const needsElement = document.getElementById('needsContact');
+                const weeklyElement = document.getElementById('weeklyContacts');
+
+                if (totalElement) totalElement.textContent = this.mentees.length;
+                if (needsElement) needsElement.textContent = needsContact;
+                if (weeklyElement) weeklyElement.textContent = this.getWeeklyStats();
+
+                console.log('Stats updated:', {
+                    total: this.mentees.length,
+                    needsContact: needsContact,
+                    weekly: this.getWeeklyStats()
+                });
             }
 
 
@@ -1946,10 +1977,10 @@ m 919-215-0170`;
                                                     interaction.type === 'ftf' ? '🤝' : '📧';
                                         const noteText = interaction.notes ? ` (${interaction.notes})` : '';
                                         return `
-                                            <div class="history-item">
+                                        <div class="history-item">
                                                 <span class="history-icon">${icon}</span>
                                                 ${this.formatDate(interaction.timestamp)}${noteText}
-                                            </div>
+                                        </div>
                                         `;
                                     }).join('')}
                                 </div>
