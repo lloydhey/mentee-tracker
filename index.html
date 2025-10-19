@@ -741,7 +741,7 @@
         // 4. Copy the Sheet ID from URL: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit
         const GOOGLE_SHEET_ID = '1wuo6HFBtSFWDH95HZ1uCtLVZ777uVVtcp0GI95Qcyvw';
         // Template content (from CG Invite 20251019.txt)
-        const TEMPLATE_CONTENT = `Subject:  Join us for Special Outpost Dinner & Talk this evening at the Hey's!
+        const TEMPLATE_CONTENT = `Subject: Join us for Special Outpost Dinner & Talk this evening at the Hey's!
 
 Body:
 Hi [FirstName]!
@@ -913,6 +913,7 @@ m 919-215-0170`;
 
             getTemplateContent() {
                 // Return the static template content
+                console.log('Template content being used:', TEMPLATE_CONTENT);
                 return TEMPLATE_CONTENT;
             }
         }
