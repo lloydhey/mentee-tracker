@@ -2150,6 +2150,10 @@ m 919-215-0170`;
                 const hasNext = currentIndex >= 0 && currentIndex < filteredMentees.length - 1;
                 const hasPrevious = currentIndex > 0;
 
+                // Build disabled attributes
+                const prevDisabled = hasPrevious ? '' : ' disabled';
+                const nextDisabled = hasNext ? '' : ' disabled';
+
                 // Calculate time since last contact
                 const lastContactInfo = this.getDaysAgo(mentee.lastContact, parseInt(mentee.fu) || 14);
                 const needsFollowUp = this.needsFollowUp(mentee);
@@ -2164,14 +2168,14 @@ m 919-215-0170`;
                         <div class="contact-header">
                             <div class="header-left-nav">
                                 <button class="btn-back" onclick="app.render()">← Back</button>
-                                <button class="btn-nav" onclick="app.navigateToPrevious('${menteeId}')" ${!hasPrevious ? 'disabled' : ''}>← Prev</button>
+                                <button class="btn-nav" onclick="app.navigateToPrevious('${menteeId}')"${prevDisabled}>← Prev</button>
                             </div>
                             <div class="contact-title">
                                 <h2>${this.escapeHtml(mentee.name)}</h2>
                                 <div class="contact-status status-${statusColor}">${statusText}</div>
                             </div>
                             <div class="header-right-nav">
-                                <button class="btn-nav" onclick="app.navigateToNext('${menteeId}')" ${!hasNext ? 'disabled' : ''}>Next →</button>
+                                <button class="btn-nav" onclick="app.navigateToNext('${menteeId}')"${nextDisabled}>Next →</button>
                                 <button class="btn-edit" onclick="app.showEditMenteeModal('${mentee.id}')">✏️ Edit</button>
                             </div>
                         </div>
