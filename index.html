@@ -2071,7 +2071,7 @@ m 919-215-0170`;
                 
                 document.getElementById('templateSubject').value = subject;
                 document.getElementById('templateBody').value = body;
-                this.openModal('templateEditorModal');
+                document.getElementById('templateEditorModal').classList.add('active');
                 
                 // Close the dropdown
                 const menu = document.getElementById('dropdownMenu');
