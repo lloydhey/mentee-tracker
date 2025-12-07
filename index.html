@@ -512,8 +512,11 @@
         .log-buttons {
             display: flex;
             gap: 0.5rem;
-            margin-bottom: 1.5rem;
             flex-wrap: wrap;
+        }
+        
+        .contact-item .log-buttons {
+            margin: 0;
         }
 
         .btn-log {
@@ -2195,6 +2198,18 @@ m 919-215-0170`;
                                 </div>
                             ` : ''}
                             
+                            <div class="contact-item">
+                                <div class="contact-label">📋 Log Interaction</div>
+                                <div class="contact-value">
+                                    <div class="log-buttons">
+                                        <button class="btn-log txt" onclick="app.logInteraction('${mentee.id}', 'text')">📱 TXT</button>
+                                        <button class="btn-log call" onclick="app.logInteraction('${mentee.id}', 'call')">📞 PC</button>
+                                        <button class="btn-log email" onclick="app.logInteraction('${mentee.id}', 'email')">📧 EM</button>
+                                        <button class="btn-log ftf" onclick="app.logFaceToFace('${mentee.id}')">🤝 FTF</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             ${mentee.loc ? `
                                 <div class="contact-item">
                                     <div class="contact-label">🏫 School</div>
@@ -2253,14 +2268,7 @@ m 919-215-0170`;
                         </div>
                         
                         <div class="contact-log-section">
-                            <h3>📋 Interaction Log</h3>
-                            <div class="log-buttons">
-                                <button class="btn-log txt" onclick="app.logInteraction('${mentee.id}', 'text')">📱 TXT</button>
-                                <button class="btn-log call" onclick="app.logInteraction('${mentee.id}', 'call')">📞 PC</button>
-                                <button class="btn-log email" onclick="app.logInteraction('${mentee.id}', 'email')">📧 EM</button>
-                                <button class="btn-log ftf" onclick="app.logFaceToFace('${mentee.id}')">🤝 FTF</button>
-                            </div>
-                            
+                            <h3>📋 Interaction History</h3>
                             <div class="interaction-history">
                                 ${recentInteractions.length > 0 ? 
                                     recentInteractions.map(interaction => {
