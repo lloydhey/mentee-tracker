@@ -1289,8 +1289,8 @@
                 <small style="color: #6b7280;">Clearing the template will disable automatic text insertion</small>
             </div>
             <div class="modal-actions">
-                <button class="btn-secondary" onclick="app.closeModal('templateEditorModal')">Cancel</button>
-                <button class="btn-primary" onclick="app.saveTemplate()">Save Template</button>
+                <button type="button" class="btn-secondary" onclick="app.closeModal('templateEditorModal')">Cancel</button>
+                <button type="button" id="saveTemplateBtn" class="btn-primary" onclick="app.saveTemplate()">Save Template</button>
             </div>
         </div>
     </div>
@@ -2085,6 +2085,21 @@ m 919-215-0170`;
                 document.getElementById('templateBody').value = body;
                 document.getElementById('templateEditorModal').classList.add('active');
                 
+                // Set up event listener as backup (remove old one first)
+                const saveBtn = document.getElementById('saveTemplateBtn');
+                if (saveBtn) {
+                    // Remove any existing listeners by cloning the button
+                    const newSaveBtn = saveBtn.cloneNode(true);
+                    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+                    // Add event listener
+                    newSaveBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Save button clicked via event listener');
+                        this.saveTemplate();
+                    });
+                }
+                
                 // Close the dropdown
                 const menu = document.getElementById('dropdownMenu');
                 if (menu) {
@@ -2093,9 +2108,12 @@ m 919-215-0170`;
             }
 
             saveTemplate() {
+                console.log('saveTemplate() called');
                 try {
                     const subjectInput = document.getElementById('templateSubject');
                     const bodyInput = document.getElementById('templateBody');
+                    
+                    console.log('Input fields found:', { subjectInput: !!subjectInput, bodyInput: !!bodyInput });
                     
                     if (!subjectInput || !bodyInput) {
                         console.error('Template input fields not found');
@@ -2105,6 +2123,8 @@ m 919-215-0170`;
                     
                     const subject = subjectInput.value.trim();
                     const body = bodyInput.value.trim();
+                    
+                    console.log('Template values:', { subject, body });
                     
                     let template = '';
                     if (subject || body) {
@@ -2117,7 +2137,8 @@ m 919-215-0170`;
                         }
                     }
                     
-                    console.log('Saving template:', template);
+                    console.log('Final template to save:', template);
+                    console.log('Template length:', template.length);
                     
                     // Check if saveTemplateToStorage function exists
                     if (typeof saveTemplateToStorage !== 'function') {
@@ -2126,22 +2147,28 @@ m 919-215-0170`;
                         return;
                     }
                     
+                    console.log('Calling saveTemplateToStorage...');
                     saveTemplateToStorage(template);
                     
                     // Verify it was saved
                     const saved = localStorage.getItem('messageTemplate');
-                    console.log('Template saved to localStorage:', saved);
+                    console.log('Template retrieved from localStorage:', saved);
+                    console.log('Templates match:', saved === template);
                     
                     if (saved !== template) {
                         console.error('Template save verification failed');
+                        console.error('Expected:', template);
+                        console.error('Got:', saved);
                         this.showToast('Warning: Template may not have saved correctly', 'error');
                         return;
                     }
                     
+                    console.log('Template saved successfully!');
                     this.closeModal('templateEditorModal');
                     this.showToast('Template saved successfully!', 'success');
                 } catch (error) {
                     console.error('Error saving template:', error);
+                    console.error('Error stack:', error.stack);
                     this.showToast('Error saving template: ' + error.message, 'error');
                 }
             }
