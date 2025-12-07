@@ -2122,18 +2122,20 @@ m 919-215-0170`;
             }
 
             navigateToNext(menteeId) {
-                const filteredMentees = this.getFilteredMentees();
-                const currentIndex = filteredMentees.findIndex(m => m.id === menteeId);
-                if (currentIndex >= 0 && currentIndex < filteredMentees.length - 1) {
-                    this.showContactView(filteredMentees[currentIndex + 1].id);
+                // Use full sorted list for navigation (not filtered by search)
+                const sortedMentees = [...this.mentees].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                const currentIndex = sortedMentees.findIndex(m => m.id === menteeId);
+                if (currentIndex >= 0 && currentIndex < sortedMentees.length - 1) {
+                    this.showContactView(sortedMentees[currentIndex + 1].id);
                 }
             }
 
             navigateToPrevious(menteeId) {
-                const filteredMentees = this.getFilteredMentees();
-                const currentIndex = filteredMentees.findIndex(m => m.id === menteeId);
+                // Use full sorted list for navigation (not filtered by search)
+                const sortedMentees = [...this.mentees].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                const currentIndex = sortedMentees.findIndex(m => m.id === menteeId);
                 if (currentIndex > 0) {
-                    this.showContactView(filteredMentees[currentIndex - 1].id);
+                    this.showContactView(sortedMentees[currentIndex - 1].id);
                 }
             }
 
@@ -2144,10 +2146,10 @@ m 919-215-0170`;
                 const container = document.getElementById('menteeList');
                 if (!container) return;
 
-                // Get filtered list for navigation
-                const filteredMentees = this.getFilteredMentees();
-                const currentIndex = filteredMentees.findIndex(m => m.id === menteeId);
-                const hasNext = currentIndex >= 0 && currentIndex < filteredMentees.length - 1;
+                // Use full sorted list for navigation (not filtered by search)
+                const sortedMentees = [...this.mentees].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                const currentIndex = sortedMentees.findIndex(m => m.id === menteeId);
+                const hasNext = currentIndex >= 0 && currentIndex < sortedMentees.length - 1;
                 const hasPrevious = currentIndex > 0;
 
                 // Calculate time since last contact
