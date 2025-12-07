@@ -275,7 +275,13 @@
             border-bottom: 1px solid #e5e7eb;
         }
 
-        .btn-back {
+        .header-left-nav, .header-right-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-back, .btn-nav {
             background: #f3f4f6;
             border: 1px solid #d1d5db;
             border-radius: 0.5rem;
@@ -285,8 +291,18 @@
             font-size: 0.9rem;
         }
 
-        .btn-back:hover {
+        .btn-back:hover, .btn-nav:hover {
             background: #e5e7eb;
+        }
+
+        .btn-nav {
+            background: #3b82f6;
+            color: white;
+            border: 1px solid #2563eb;
+        }
+
+        .btn-nav:hover {
+            background: #2563eb;
         }
 
         .contact-header h2 {
@@ -1755,18 +1771,6 @@ m 919-215-0170`;
                 const mentee = this.mentees.find(m => m.id === menteeId);
                 if (!mentee) return;
 
-                // Confirm the interaction
-                const actionNames = {
-                    'text': 'text',
-                    'call': 'call',
-                    'email': 'email',
-                    'ftf': 'face-to-face meeting'
-                };
-                const actionName = actionNames[type] || type;
-                if (!confirm(`Log ${actionName} with ${mentee.name}?`)) {
-                    return;
-                }
-
                 const interaction = {
                     type,
                     timestamp: new Date().toISOString(),
@@ -1782,16 +1786,23 @@ m 919-215-0170`;
                 });
 
                 await this.loadMentees();
-                this.render();
                 
-                // Show success toast
+                // If we're in contact view, refresh it; otherwise render list
+                const container = document.getElementById('menteeList');
+                if (container && container.querySelector('.contact-view')) {
+                    this.showContactView(menteeId);
+                } else {
+                    this.render();
+                }
+                
+                // Show success notice
                 const toastNames = {
                     'text': '📱 Text',
                     'call': '📞 Call',
                     'email': '📧 Email',
                     'ftf': '🤝 Face-to-Face'
                 };
-                const toastMessage = notes ? `${toastNames[type] || type} (${notes}) logged successfully!` : `${toastNames[type] || type} logged successfully!`;
+                const toastMessage = notes ? `${toastNames[type] || type} (${notes}) logged` : `${toastNames[type] || type} logged`;
                 this.showToast(toastMessage, 'success');
             }
 
@@ -1799,115 +1810,93 @@ m 919-215-0170`;
                 const mentee = this.mentees.find(m => m.id === menteeId);
                 if (!mentee) return;
 
-                // Prompt for FTF type
+                // Prompt for FTF type with default
                 const ftfType = prompt(
                     `Face-to-Face meeting with ${mentee.name}\n\n` +
-                    `Enter type:\n` +
-                    `  SC - Shadowing Clinic\n` +
-                    `  SO - Shadowing OR\n` +
-                    `  QS - Quad Squad\n` +
-                    `  OP - Outpost\n` +
-                    `  CO - Coffee\n` +
-                    `  ME - Meal\n` +
-                    `  Or enter custom description:`,
+                    `Enter type (SC/SO/QS/OP/CO/ME or custom):`,
                     'SC'
                 );
 
-                if (ftfType === null || ftfType.trim() === '') {
-                    return; // User cancelled
-                }
-
-                await this.logInteraction(menteeId, 'ftf', ftfType.trim());
+                // Use default if cancelled or empty
+                const finalType = (ftfType === null || ftfType.trim() === '') ? 'FTF' : ftfType.trim();
+                await this.logInteraction(menteeId, 'ftf', finalType);
             }
 
             async initiateContact(menteeId, type) {
                 const mentee = this.mentees.find(m => m.id === menteeId);
                 if (!mentee) return;
 
-                // Ask if user wants to use template (default to yes)
-                const useTemplate = confirm(`Use template for ${type} to ${mentee.name}?`);
-                
-                if (useTemplate) {
-                    try {
-                        const templateContent = this.storage.auth.getTemplateContent();
-                        if (templateContent) {
-                            if (type === 'email') {
-                                if (!mentee.email) return;
-                                // Parse template for subject and body
-                                const lines = templateContent.split('\n');
-                                let subject = '';
-                                let body = '';
-                                let inBody = false;
-                                
-                                for (let i = 0; i < lines.length; i++) {
-                                    const line = lines[i];
-                                    if (line.toLowerCase().startsWith('subject:')) {
-                                        // Subject is on the same line after the colon
-                                        subject = line.substring(8).trim();
-                                    } else if (line.toLowerCase().startsWith('body:')) {
-                                        inBody = true;
-                                        // Body starts on the next line
-                                        if (i + 1 < lines.length) {
-                                            body = lines[i + 1].trim();
-                                        }
-                                    } else if (inBody && line.trim() !== '') {
-                                        body += '\n' + line;
+                // Always try to use template first, fallback to regular contact
+                try {
+                    const templateContent = this.storage.auth.getTemplateContent();
+                    if (templateContent) {
+                        if (type === 'email') {
+                            if (!mentee.email) return;
+                            // Parse template for subject and body
+                            const lines = templateContent.split('\n');
+                            let subject = '';
+                            let body = '';
+                            let inBody = false;
+                            
+                            for (let i = 0; i < lines.length; i++) {
+                                const line = lines[i];
+                                if (line.toLowerCase().startsWith('subject:')) {
+                                    // Subject is on the same line after the colon
+                                    subject = line.substring(8).trim();
+                                } else if (line.toLowerCase().startsWith('body:')) {
+                                    inBody = true;
+                                    // Body starts on the next line
+                                    if (i + 1 < lines.length) {
+                                        body = lines[i + 1].trim();
                                     }
+                                } else if (inBody && line.trim() !== '') {
+                                    body += '\n' + line;
                                 }
-                                
-                                // Replace [FirstName] with actual mentee name
-                                const firstName = mentee.name.split(' ')[0];
-                                body = body.replace(/\[FirstName\]/g, firstName);
-                                
-                                const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(mentee.email)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                                window.open(gmailUrl, '_blank');
-                            } else if (type === 'text') {
-                                if (!mentee.mobile) return;
-                                const cleanPhone = mentee.mobile.replace(/\D/g, '');
-                                // For text, use just the body content without subject
-                                const lines = templateContent.split('\n');
-                                let body = '';
-                                let inBody = false;
-                                
-                                for (let i = 0; i < lines.length; i++) {
-                                    const line = lines[i];
-                                    if (line.toLowerCase().startsWith('body:')) {
-                                        inBody = true;
-                                        // Body starts on the next line
-                                        if (i + 1 < lines.length) {
-                                            body = lines[i + 1].trim();
-                                        }
-                                    } else if (inBody && line.trim() !== '') {
-                                        body += '\n' + line;
-                                    }
-                                }
-                                
-                                // Replace [FirstName] with actual mentee name
-                                const firstName = mentee.name.split(' ')[0];
-                                body = body.replace(/\[FirstName\]/g, firstName);
-                                
-                                const smsUrl = `sms:${cleanPhone}&body=${encodeURIComponent(body)}`;
-                                window.location.href = smsUrl;
                             }
-                } else {
-                            // Fallback to regular contact if template fails
-                            this.initiateContactWithoutTemplate(menteeId, type);
+                            
+                            // Replace [FirstName] with actual mentee name
+                            const firstName = mentee.name.split(' ')[0];
+                            body = body.replace(/\[FirstName\]/g, firstName);
+                            
+                            const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(mentee.email)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                            window.open(gmailUrl, '_blank');
+                        } else if (type === 'text') {
+                            if (!mentee.mobile) return;
+                            const cleanPhone = mentee.mobile.replace(/\D/g, '');
+                            // For text, use just the body content without subject
+                            const lines = templateContent.split('\n');
+                            let body = '';
+                            let inBody = false;
+                            
+                            for (let i = 0; i < lines.length; i++) {
+                                const line = lines[i];
+                                if (line.toLowerCase().startsWith('body:')) {
+                                    inBody = true;
+                                    // Body starts on the next line
+                                    if (i + 1 < lines.length) {
+                                        body = lines[i + 1].trim();
+                                    }
+                                } else if (inBody && line.trim() !== '') {
+                                    body += '\n' + line;
+                                }
+                            }
+                            
+                            // Replace [FirstName] with actual mentee name
+                            const firstName = mentee.name.split(' ')[0];
+                            body = body.replace(/\[FirstName\]/g, firstName);
+                            
+                            const smsUrl = `sms:${cleanPhone}&body=${encodeURIComponent(body)}`;
+                            window.location.href = smsUrl;
                         }
-                    } catch (error) {
-                        console.error('Error using template:', error);
-                        // Fallback to regular contact
+                    } else {
+                        // No template available, use regular contact
                         this.initiateContactWithoutTemplate(menteeId, type);
                     }
-                } else {
+                } catch (error) {
+                    console.error('Error using template:', error);
+                    // Fallback to regular contact
                     this.initiateContactWithoutTemplate(menteeId, type);
                 }
-
-                // Ask if user wants to log the interaction after a delay
-                setTimeout(() => {
-                    if (confirm(`Did you send the ${type} to ${mentee.name}? Log this interaction?`)) {
-                        this.logInteraction(menteeId, type);
-                    }
-                }, 2000);
             }
 
             initiateContactWithoutTemplate(menteeId, type) {
@@ -1926,13 +1915,6 @@ m 919-215-0170`;
                     const cleanPhone = mentee.mobile.replace(/\D/g, '');
                     window.location.href = `tel:${cleanPhone}`;
                 }
-
-                // Ask if user wants to log the interaction after a delay
-                setTimeout(() => {
-                    if (confirm(`Did you send the ${type} to ${mentee.name}? Log this interaction?`)) {
-                    this.logInteraction(menteeId, type);
-                    }
-                }, 2000);
             }
 
             showToast(message, type = 'success') {
@@ -1998,12 +1980,34 @@ m 919-215-0170`;
                 }
             }
 
+            navigateToNext(menteeId) {
+                const filteredMentees = this.getFilteredMentees();
+                const currentIndex = filteredMentees.findIndex(m => m.id === menteeId);
+                if (currentIndex >= 0 && currentIndex < filteredMentees.length - 1) {
+                    this.showContactView(filteredMentees[currentIndex + 1].id);
+                }
+            }
+
+            navigateToPrevious(menteeId) {
+                const filteredMentees = this.getFilteredMentees();
+                const currentIndex = filteredMentees.findIndex(m => m.id === menteeId);
+                if (currentIndex > 0) {
+                    this.showContactView(filteredMentees[currentIndex - 1].id);
+                }
+            }
+
             showContactView(menteeId) {
                 const mentee = this.mentees.find(m => m.id === menteeId);
                 if (!mentee) return;
 
                 const container = document.getElementById('menteeList');
                 if (!container) return;
+
+                // Get filtered list for navigation
+                const filteredMentees = this.getFilteredMentees();
+                const currentIndex = filteredMentees.findIndex(m => m.id === menteeId);
+                const hasNext = currentIndex >= 0 && currentIndex < filteredMentees.length - 1;
+                const hasPrevious = currentIndex > 0;
 
                 // Calculate time since last contact
                 const lastContactInfo = this.getDaysAgo(mentee.lastContact, parseInt(mentee.fu) || 14);
@@ -2017,12 +2021,18 @@ m 919-215-0170`;
                 container.innerHTML = `
                     <div class="contact-view">
                         <div class="contact-header">
-                            <button class="btn-back" onclick="app.render()">← Back</button>
+                            <div class="header-left-nav">
+                                <button class="btn-back" onclick="app.render()">← Back</button>
+                                ${hasPrevious ? `<button class="btn-nav" onclick="app.navigateToPrevious('${menteeId}')">← Prev</button>` : ''}
+                            </div>
                             <div class="contact-title">
                                 <h2>${this.escapeHtml(mentee.name)}</h2>
                                 <div class="contact-status status-${statusColor}">${statusText}</div>
                             </div>
-                            <button class="btn-edit" onclick="app.showEditMenteeModal('${mentee.id}')">✏️ Edit</button>
+                            <div class="header-right-nav">
+                                ${hasNext ? `<button class="btn-nav" onclick="app.navigateToNext('${menteeId}')">Next →</button>` : ''}
+                                <button class="btn-edit" onclick="app.showEditMenteeModal('${mentee.id}')">✏️ Edit</button>
+                            </div>
                         </div>
                         
                         <div class="contact-photo-section">
@@ -2155,15 +2165,8 @@ m 919-215-0170`;
 
             handleEmailClick(menteeId, event) {
                 event.preventDefault();
-                const useTemplate = confirm('Use template for this email?');
-                if (useTemplate) {
-                    this.initiateContact(menteeId, 'email');
-                } else {
-                    const mentee = this.mentees.find(m => m.id === menteeId);
-                    if (mentee && mentee.email) {
-                        window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(mentee.email)}`, '_blank');
-                    }
-                }
+                // Always use template if available, otherwise open regular email
+                this.initiateContact(menteeId, 'email');
             }
 
             uploadPhoto(menteeId) {
