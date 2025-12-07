@@ -1093,7 +1093,7 @@
                     <span></span>
                     <span></span>
                     <span></span>
-                </div>
+            </div>
             </div>
             <div class="header-center">
             <div class="search-box">
@@ -1749,9 +1749,9 @@ m 919-215-0170`;
                     console.log('Search input found, adding event listener');
                     searchInput.addEventListener('input', (e) => {
                         console.log('Search input changed:', e.target.value);
-                        this.searchTerm = e.target.value.toLowerCase();
-                        this.render();
-                    });
+                    this.searchTerm = e.target.value.toLowerCase();
+                    this.render();
+                });
                 } else {
                     console.error('Search input not found');
                 }
@@ -1869,7 +1869,7 @@ m 919-215-0170`;
                 if (container && container.querySelector('.contact-view')) {
                     this.showContactView(menteeId);
                 } else {
-                    this.render();
+                this.render();
                 }
                 
                 // Show success notice
@@ -1965,7 +1965,7 @@ m 919-215-0170`;
                             const smsUrl = `sms:${cleanPhone}&body=${encodeURIComponent(body)}`;
                             window.location.href = smsUrl;
                         }
-                    } else {
+                } else {
                         // No template available, use regular contact
                         this.initiateContactWithoutTemplate(menteeId, type);
                     }
@@ -2150,10 +2150,6 @@ m 919-215-0170`;
                 const hasNext = currentIndex >= 0 && currentIndex < filteredMentees.length - 1;
                 const hasPrevious = currentIndex > 0;
 
-                // Build disabled attributes
-                const prevDisabled = hasPrevious ? '' : ' disabled';
-                const nextDisabled = hasNext ? '' : ' disabled';
-
                 // Calculate time since last contact
                 const lastContactInfo = this.getDaysAgo(mentee.lastContact, parseInt(mentee.fu) || 14);
                 const needsFollowUp = this.needsFollowUp(mentee);
@@ -2168,14 +2164,14 @@ m 919-215-0170`;
                         <div class="contact-header">
                             <div class="header-left-nav">
                                 <button class="btn-back" onclick="app.render()">← Back</button>
-                                <button class="btn-nav" onclick="app.navigateToPrevious('${menteeId}')"${prevDisabled}>← Prev</button>
+                                <button class="btn-nav" onclick="app.navigateToPrevious('${menteeId}')" ${!hasPrevious ? 'disabled' : ''}>← Prev</button>
                             </div>
                             <div class="contact-title">
                                 <h2>${this.escapeHtml(mentee.name)}</h2>
                                 <div class="contact-status status-${statusColor}">${statusText}</div>
                             </div>
                             <div class="header-right-nav">
-                                <button class="btn-nav" onclick="app.navigateToNext('${menteeId}')"${nextDisabled}>Next →</button>
+                                <button class="btn-nav" onclick="app.navigateToNext('${menteeId}')" ${!hasNext ? 'disabled' : ''}>Next →</button>
                                 <button class="btn-edit" onclick="app.showEditMenteeModal('${mentee.id}')">✏️ Edit</button>
                             </div>
                         </div>
@@ -2405,7 +2401,7 @@ m 919-215-0170`;
             async addMentee() {
                 console.log('addMentee called');
                 try {
-                    const name = document.getElementById('menteeName').value.trim();
+                const name = document.getElementById('menteeName').value.trim();
                     const mobile = document.getElementById('menteeMobile').value.trim();
                     const email = document.getElementById('menteeEmail').value.trim();
                     const fu = document.getElementById('menteeFu').value.trim();
@@ -2419,10 +2415,10 @@ m 919-215-0170`;
                     const notes = document.getElementById('menteeNotes').value.trim();
                     const address = document.getElementById('menteeAddress').value.trim();
 
-                    if (!name) {
-                        alert('Please enter a name');
-                        return;
-                    }
+                if (!name) {
+                    alert('Please enter a name');
+                    return;
+                }
 
                     const modal = document.getElementById('addMenteeModal');
                     const editId = modal.getAttribute('data-edit-id');
@@ -2457,8 +2453,8 @@ m 919-215-0170`;
                         document.querySelector('#addMenteeModal button[type="submit"]').textContent = 'Add Contact';
                     } else {
                         // Adding new mentee
-                        const newMentee = {
-                            name,
+                const newMentee = {
+                    name,
                             mobile,
                             email,
                             fu: parseInt(fu) || 30,
@@ -2471,15 +2467,15 @@ m 919-215-0170`;
                             yr: yr || '',
                             notes: notes || '',
                             address: address || '',
-                            lastContact: null,
-                            interactions: []
-                        };
+                    lastContact: null,
+                    interactions: []
+                };
 
-                        await this.storage.addMentee(newMentee);
-                        this.closeModal('addMenteeModal');
+                await this.storage.addMentee(newMentee);
+                this.closeModal('addMenteeModal');
                         await this.loadMentees();
-                        this.render();
-                        this.showToast(`${name} added successfully!`, 'success');
+                this.render();
+                this.showToast(`${name} added successfully!`, 'success');
                     }
                 } catch (error) {
                     console.error('Error saving mentee:', error);
@@ -2724,13 +2720,13 @@ m 919-215-0170`;
                 container.innerHTML = filteredMentees.map(mentee => {
                     return `
                         <div class="mentee-list-item" onclick="app.showContactView('${mentee.id}')">
-                            <div class="mentee-info">
+                                <div class="mentee-info">
                                 <div class="mentee-name">${this.escapeHtml(mentee.name)}</div>
                                 <div class="mentee-details">
                                     ${mentee.loc ? `<span class="school">${this.escapeHtml(mentee.loc)}</span>` : ''}
                                     ${mentee.yr ? `<span class="year">${this.escapeHtml(mentee.yr)}</span>` : ''}
                                 </div>
-                            </div>
+                                </div>
                             <div class="mentee-arrow">→</div>
                         </div>
                     `;
