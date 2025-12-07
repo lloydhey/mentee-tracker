@@ -380,6 +380,22 @@
             background: #059669;
         }
 
+        .btn-insert-text {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-left: 0.5rem;
+        }
+
+        .btn-insert-text:hover {
+            background: #7c3aed;
+        }
+
         .contact-actions {
             display: flex;
             gap: 1rem;
@@ -1077,6 +1093,7 @@
         <!-- Dropdown Menu -->
         <div id="dropdownMenu" class="dropdown-menu">
             <button class="menu-item" onclick="app.showStats()">📊 Statistics</button>
+            <button class="menu-item" onclick="app.showTemplateEditor()">✏️ Edit Message Template</button>
             <button class="menu-item" onclick="app.showBulkImportModal()">📥 Bulk Import</button>
             <button class="menu-item" onclick="app.exportData()">📤 Export Data</button>
             <button class="menu-item" onclick="document.getElementById('importFile').click()">📁 Import Data</button>
@@ -1236,6 +1253,33 @@
         </div>
     </div>
 
+    <!-- Template Editor Modal -->
+    <div id="templateEditorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Edit Message Template</h2>
+                <button class="close-btn" onclick="app.closeModal('templateEditorModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="templateSubject">Subject Line:</label>
+                <input type="text" id="templateSubject" placeholder="Enter email subject (leave blank for no template)">
+            </div>
+            <div class="form-group">
+                <label for="templateBody">Message Body:</label>
+                <textarea id="templateBody" rows="15" placeholder="Enter message body. Use [FirstName] as a placeholder for the mentee's first name. Leave blank to disable template."></textarea>
+                <small>Use [FirstName] to insert the mentee's first name automatically</small>
+            </div>
+            <div class="form-group">
+                <button class="btn-secondary" onclick="app.clearTemplate()" style="margin-right: 0.5rem;">Clear Template</button>
+                <small style="color: #6b7280;">Clearing the template will disable automatic text insertion</small>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="app.closeModal('templateEditorModal')">Cancel</button>
+                <button class="btn-primary" onclick="app.saveTemplate()">Save Template</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ========================================
         // SIMPLE SETUP - JUST 2 STEPS!
@@ -1247,8 +1291,10 @@
         // 3. Make it public: Share → Anyone with link can edit
         // 4. Copy the Sheet ID from URL: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit
         const GOOGLE_SHEET_ID = '1wuo6HFBtSFWDH95HZ1uCtLVZ777uVVtcp0GI95Qcyvw';
-        // Template content (from CG Invite 20251019.txt)
-        const TEMPLATE_CONTENT = `Subject: Join us for Special Outpost Dinner & Talk this evening at the Hey's!
+        
+        // Template content - loaded from localStorage or default
+        function getDefaultTemplate() {
+            return `Subject: Join us for Special Outpost Dinner & Talk this evening at the Hey's!
 
 Body:
 Hi [FirstName]!
@@ -1268,6 +1314,22 @@ If you can email me back so we can get a good head count for dinner that would b
 Hope to see you soon!
 Dr. Hey
 m 919-215-0170`;
+        }
+        
+        // Load template from localStorage or use default
+        function loadTemplate() {
+            const saved = localStorage.getItem('messageTemplate');
+            return saved || getDefaultTemplate();
+        }
+        
+        // Save template to localStorage
+        function saveTemplateToStorage(template) {
+            if (template && template.trim()) {
+                localStorage.setItem('messageTemplate', template);
+            } else {
+                localStorage.removeItem('messageTemplate');
+            }
+        }
         
         // STEP 2: Get Google OAuth2 Client ID
         // 1. Go to https://console.cloud.google.com/
@@ -1419,8 +1481,8 @@ m 919-215-0170`;
             }
 
             getTemplateContent() {
-                // Return the static template content
-                return TEMPLATE_CONTENT;
+                // Return template from localStorage or default
+                return loadTemplate();
             }
         }
 
@@ -1829,7 +1891,7 @@ m 919-215-0170`;
                 // Always try to use template first, fallback to regular contact
                 try {
                     const templateContent = this.storage.auth.getTemplateContent();
-                    if (templateContent) {
+                    if (templateContent && templateContent.trim()) {
                         if (type === 'email') {
                             if (!mentee.email) return;
                             // Parse template for subject and body
@@ -1980,6 +2042,70 @@ m 919-215-0170`;
                 }
             }
 
+            showTemplateEditor() {
+                const template = loadTemplate();
+                let subject = '';
+                let body = '';
+                
+                if (template) {
+                    const lines = template.split('\n');
+                    let inBody = false;
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i];
+                        if (line.toLowerCase().startsWith('subject:')) {
+                            subject = line.substring(8).trim();
+                        } else if (line.toLowerCase().startsWith('body:')) {
+                            inBody = true;
+                            if (i + 1 < lines.length) {
+                                body = lines[i + 1].trim();
+                            }
+                        } else if (inBody && line.trim() !== '') {
+                            body += '\n' + line;
+                        }
+                    }
+                }
+                
+                document.getElementById('templateSubject').value = subject;
+                document.getElementById('templateBody').value = body;
+                this.openModal('templateEditorModal');
+                
+                // Close the dropdown
+                const menu = document.getElementById('dropdownMenu');
+                if (menu) {
+                    menu.classList.remove('show');
+                }
+            }
+
+            saveTemplate() {
+                const subject = document.getElementById('templateSubject').value.trim();
+                const body = document.getElementById('templateBody').value.trim();
+                
+                let template = '';
+                if (subject || body) {
+                    if (subject) {
+                        template = `Subject: ${subject}\n\n`;
+                    }
+                    template += 'Body:\n';
+                    if (body) {
+                        template += body;
+                    }
+                }
+                
+                saveTemplateToStorage(template);
+                this.closeModal('templateEditorModal');
+                this.showToast('Template saved successfully!', 'success');
+            }
+
+            clearTemplate() {
+                if (confirm('Are you sure you want to clear the template? This will disable automatic text insertion.')) {
+                    document.getElementById('templateSubject').value = '';
+                    document.getElementById('templateBody').value = '';
+                    saveTemplateToStorage('');
+                    this.showToast('Template cleared', 'success');
+                }
+            }
+
             navigateToNext(menteeId) {
                 const filteredMentees = this.getFilteredMentees();
                 const currentIndex = filteredMentees.findIndex(m => m.id === menteeId);
@@ -2053,7 +2179,8 @@ m 919-215-0170`;
                                     <div class="contact-label">📱 Mobile</div>
                                     <div class="contact-value">
                                         <a href="tel:${mentee.mobile}">${mentee.mobile}</a>
-                                        <button class="btn-text-small" onclick="app.initiateContact('${mentee.id}', 'text')">📱 Text</button>
+                                        <button class="btn-text-small" onclick="app.initiateContactWithoutTemplate('${mentee.id}', 'text')">📱 Text</button>
+                                        <button class="btn-insert-text" onclick="app.initiateContact('${mentee.id}', 'text')">📝 Insert Text</button>
                                     </div>
                                 </div>
                             ` : ''}
@@ -2063,6 +2190,7 @@ m 919-215-0170`;
                                     <div class="contact-label">📧 Email</div>
                                     <div class="contact-value">
                                         <a href="mailto:${mentee.email}" onclick="app.handleEmailClick('${mentee.id}', event)">${mentee.email}</a>
+                                        <button class="btn-insert-text" onclick="app.initiateContact('${mentee.id}', 'email')">📝 Insert Text</button>
                                     </div>
                                 </div>
                             ` : ''}
@@ -2165,8 +2293,8 @@ m 919-215-0170`;
 
             handleEmailClick(menteeId, event) {
                 event.preventDefault();
-                // Always use template if available, otherwise open regular email
-                this.initiateContact(menteeId, 'email');
+                // Open blank email (no template)
+                this.initiateContactWithoutTemplate(menteeId, 'email');
             }
 
             uploadPhoto(menteeId) {
