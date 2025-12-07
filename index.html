@@ -2093,23 +2093,57 @@ m 919-215-0170`;
             }
 
             saveTemplate() {
-                const subject = document.getElementById('templateSubject').value.trim();
-                const body = document.getElementById('templateBody').value.trim();
-                
-                let template = '';
-                if (subject || body) {
-                    if (subject) {
-                        template = `Subject: ${subject}\n\n`;
+                try {
+                    const subjectInput = document.getElementById('templateSubject');
+                    const bodyInput = document.getElementById('templateBody');
+                    
+                    if (!subjectInput || !bodyInput) {
+                        console.error('Template input fields not found');
+                        this.showToast('Error: Template editor fields not found', 'error');
+                        return;
                     }
-                    template += 'Body:\n';
-                    if (body) {
-                        template += body;
+                    
+                    const subject = subjectInput.value.trim();
+                    const body = bodyInput.value.trim();
+                    
+                    let template = '';
+                    if (subject || body) {
+                        if (subject) {
+                            template = `Subject: ${subject}\n\n`;
+                        }
+                        template += 'Body:\n';
+                        if (body) {
+                            template += body;
+                        }
                     }
+                    
+                    console.log('Saving template:', template);
+                    
+                    // Check if saveTemplateToStorage function exists
+                    if (typeof saveTemplateToStorage !== 'function') {
+                        console.error('saveTemplateToStorage function not found');
+                        this.showToast('Error: Save function not available', 'error');
+                        return;
+                    }
+                    
+                    saveTemplateToStorage(template);
+                    
+                    // Verify it was saved
+                    const saved = localStorage.getItem('messageTemplate');
+                    console.log('Template saved to localStorage:', saved);
+                    
+                    if (saved !== template) {
+                        console.error('Template save verification failed');
+                        this.showToast('Warning: Template may not have saved correctly', 'error');
+                        return;
+                    }
+                    
+                    this.closeModal('templateEditorModal');
+                    this.showToast('Template saved successfully!', 'success');
+                } catch (error) {
+                    console.error('Error saving template:', error);
+                    this.showToast('Error saving template: ' + error.message, 'error');
                 }
-                
-                saveTemplateToStorage(template);
-                this.closeModal('templateEditorModal');
-                this.showToast('Template saved successfully!', 'success');
             }
 
             clearTemplate() {
