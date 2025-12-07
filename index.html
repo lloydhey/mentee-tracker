@@ -1675,6 +1675,13 @@ m 919-215-0170`;
 
             async init() {
                 try {
+                    // Log template status on page load
+                    const savedTemplate = localStorage.getItem('messageTemplate');
+                    console.log('Page loaded - Template in localStorage:', savedTemplate ? 'EXISTS (' + savedTemplate.length + ' chars)' : 'NOT FOUND');
+                    if (savedTemplate) {
+                        console.log('Saved template content:', savedTemplate);
+                    }
+                    
                     this.updateConnectionStatus('loading', 'Loading Google APIs...');
                     
                     // Wait for Google APIs to load
@@ -2075,19 +2082,19 @@ m 919-215-0170`;
                             subject = line.substring(8).trim();
                         } else if (line.toLowerCase().startsWith('body:')) {
                             inBody = true;
-                            // Body starts on the next line (skip empty line after Body:)
-                            if (i + 1 < lines.length) {
-                                body = lines[i + 1];
-                            }
+                            // Body starts on the next line
+                            // Don't add anything here, wait for next iteration
                         } else if (inBody) {
-                            // Include all lines after Body:, even if empty
-                            if (body) {
-                                body += '\n' + line;
-                            } else {
+                            // Include all lines after Body:, preserving structure
+                            if (body === '') {
                                 body = line;
+                            } else {
+                                body += '\n' + line;
                             }
                         }
                     }
+                    // Trim the body to remove any leading/trailing whitespace
+                    body = body.trim();
                 }
                 
                 console.log('Parsed template - Subject:', subject, 'Body:', body);
@@ -2174,6 +2181,17 @@ m 919-215-0170`;
                     }
                     
                     console.log('Template saved successfully!');
+                    
+                    // Double-check it's still there after a brief delay
+                    setTimeout(() => {
+                        const verify = localStorage.getItem('messageTemplate');
+                        console.log('Verification after save - Template still in localStorage:', verify);
+                        if (verify !== template) {
+                            console.error('WARNING: Template disappeared from localStorage!');
+                            this.showToast('Warning: Template may not have persisted', 'error');
+                        }
+                    }, 100);
+                    
                     this.closeModal('templateEditorModal');
                     this.showToast('Template saved successfully!', 'success');
                 } catch (error) {
