@@ -2440,37 +2440,62 @@ m 919-215-0170`;
             }
 
             showEditMenteeModal(menteeId) {
+                console.log('showEditMenteeModal called with ID:', menteeId);
                 const mentee = this.mentees.find(m => m.id === menteeId);
-                if (!mentee) return;
+                if (!mentee) {
+                    console.error('Mentee not found with ID:', menteeId);
+                    return;
+                }
 
-                // Pre-fill the form with existing data
-                document.getElementById('menteeName').value = mentee.name || '';
-                document.getElementById('menteeMobile').value = mentee.mobile || '';
-                document.getElementById('menteeEmail').value = mentee.email || '';
-                document.getElementById('menteeFu').value = mentee.fu || '';
-                document.getElementById('menteeQs').value = mentee.qs || '';
-                document.getElementById('menteePoc').value = mentee.poc || '';
-                document.getElementById('menteeMf').value = mentee.mf || '';
-                document.getElementById('menteeLot').value = mentee.lot || '';
-                document.getElementById('menteeTyp').value = mentee.typ || '';
-                document.getElementById('menteeLoc').value = mentee.loc || '';
-                document.getElementById('menteeYr').value = mentee.yr || '';
-                document.getElementById('menteeNotes').value = mentee.notes || '';
-                document.getElementById('menteeAddress').value = mentee.address || '';
+                try {
+                    // Pre-fill the form with existing data
+                    document.getElementById('menteeName').value = mentee.name || '';
+                    document.getElementById('menteeMobile').value = mentee.mobile || '';
+                    document.getElementById('menteeEmail').value = mentee.email || '';
+                    document.getElementById('menteeFu').value = mentee.fu || '14';
+                    document.getElementById('menteeQs').value = mentee.qs || '';
+                    document.getElementById('menteePoc').value = mentee.poc || '';
+                    document.getElementById('menteeMf').value = mentee.mf || '';
+                    document.getElementById('menteeLot').value = mentee.lot || '';
+                    document.getElementById('menteeTyp').value = mentee.typ || '';
+                    document.getElementById('menteeLoc').value = mentee.loc || '';
+                    document.getElementById('menteeYr').value = mentee.yr || '';
+                    document.getElementById('menteeNotes').value = mentee.notes || '';
+                    document.getElementById('menteeAddress').value = mentee.address || '';
 
-                // Store the mentee ID for editing
-                document.getElementById('addMenteeModal').setAttribute('data-edit-id', menteeId);
-                
-                // Change the modal title and button
-                document.querySelector('#addMenteeModal h2').textContent = 'Edit Contact';
-                document.querySelector('#addMenteeModal button[type="submit"]').textContent = 'Update Contact';
-                
-                document.getElementById('addMenteeModal').classList.add('show');
+                    // Store the mentee ID for editing
+                    const modal = document.getElementById('addMenteeModal');
+                    if (!modal) {
+                        console.error('addMenteeModal not found!');
+                        return;
+                    }
+                    
+                    modal.setAttribute('data-edit-id', menteeId);
+                    
+                    // Change the modal title and button
+                    const titleElement = document.querySelector('#addMenteeModal h2');
+                    if (titleElement) {
+                        titleElement.textContent = 'Edit Contact';
+                    }
+                    
+                    const submitButton = document.querySelector('#addMenteeModal .modal-actions button.btn-primary');
+                    if (submitButton) {
+                        submitButton.textContent = 'Update Contact';
+                    } else {
+                        console.error('Submit button not found!');
+                    }
+                    
+                    modal.classList.add('active');
+                    console.log('Edit modal opened successfully');
+                } catch (error) {
+                    console.error('Error opening edit modal:', error);
+                    alert('Error opening edit form: ' + error.message);
+                }
             }
 
             showAddMenteeModal() {
                 try {
-                document.getElementById('menteeName').value = '';
+                    document.getElementById('menteeName').value = '';
                     document.getElementById('menteeMobile').value = '';
                     document.getElementById('menteeEmail').value = '';
                     document.getElementById('menteeFu').value = '14';
@@ -2486,7 +2511,19 @@ m 919-215-0170`;
                 } catch (error) {
                     console.error('Error clearing form fields:', error);
                 }
-                document.getElementById('addMenteeModal').classList.add('active');
+                
+                // Clear edit-id if it exists
+                const modal = document.getElementById('addMenteeModal');
+                modal.removeAttribute('data-edit-id');
+                
+                // Reset modal title and button
+                document.querySelector('#addMenteeModal h2').textContent = 'Add New Mentee';
+                const submitButton = document.querySelector('#addMenteeModal .modal-actions button.btn-primary');
+                if (submitButton) {
+                    submitButton.textContent = 'Add Mentee';
+                }
+                
+                modal.classList.add('active');
             }
 
             async addMentee() {
